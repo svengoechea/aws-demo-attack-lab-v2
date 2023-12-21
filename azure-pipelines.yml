@@ -8,7 +8,7 @@ variables:
   - group: aws-demo-attack-lab-v2
   
 stages:
-    - stage: Infra Deploy
+    - stage: Infra_Deploy
       displayName: Infra Deploy
       jobs:
         - job: plan
