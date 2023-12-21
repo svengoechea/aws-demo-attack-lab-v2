@@ -23,6 +23,9 @@ stages:
               backendAWSBucketName: '$(backendAWSBucketName)'
               backendAWSKey: '$(Build.Repository.Name)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+          - task: CmdLine@2
+            inputs:
+              script: 'ls -l'
           - task: TerraformTaskV4@4
             displayName: Terraform Validate
             inputs:
