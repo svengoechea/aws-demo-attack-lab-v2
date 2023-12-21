@@ -11,33 +11,33 @@ stages:
     - stage: IaC_Validation
       displayName: Validacion de IaC
       jobs:
-        - job: IaC_Validation
-          displayName:  Terraform Plan
-          steps:
-          - task: ReplaceTokens@1
-            inputs:
-              sourcePath: './infra'
-              targetFilePattern: 'backend.tf'
-              tokenRegex: '__(\w+)__'
-              replaceTokenList: |
-                backendAWSBucketName='$(backendServiceAWS)'
-                backendAWSKey='$(backendAWSKey)'
-                aws_Region='$(aws_Region)'
-          - task: TerraformTaskV4@4
-            displayName: Terraform Init
-            inputs:
-              provider: 'aws'
-              command: 'init'
-              backendServiceAWS: '$(backendServiceAWS)'
-              backendAWSBucketName: '$(backendAWSBucketName)'
-              backendAWSKey: '$(backendAWSKey)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-          - task: TerraformTaskV4@4
-            displayName: Terraform Validate
-            inputs:
-              provider: 'aws'
-              command: 'validate'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+        # - job: IaC_Validation
+        #   displayName:  Terraform Plan
+        #   steps:
+        #   - task: ReplaceTokens@1
+        #     inputs:
+        #       sourcePath: './infra'
+        #       targetFilePattern: 'backend.tf'
+        #       tokenRegex: '__(\w+)__'
+        #       replaceTokenList: |
+        #         backendAWSBucketName='$(backendServiceAWS)'
+        #         backendAWSKey='$(backendAWSKey)'
+        #         aws_Region='$(aws_Region)'
+        #   - task: TerraformTaskV4@4
+        #     displayName: Terraform Init
+        #     inputs:
+        #       provider: 'aws'
+        #       command: 'init'
+        #       backendServiceAWS: '$(backendServiceAWS)'
+        #       backendAWSBucketName: '$(backendAWSBucketName)'
+        #       backendAWSKey: '$(backendAWSKey)'
+        #       workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+        #   - task: TerraformTaskV4@4
+        #     displayName: Terraform Validate
+        #     inputs:
+        #       provider: 'aws'
+        #       command: 'validate'
+        #       workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
           # - task: TerraformTaskV4@4
           #   displayName: Terraform Plan
           #   inputs:
