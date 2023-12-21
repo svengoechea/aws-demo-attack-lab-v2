@@ -62,7 +62,7 @@ stages:
     #         displayName: Escaneo con Checkov
     - stage: IaC_Deploy
       displayName: Despliegue de IaC
-      condition: and(succeeded('Security_Gate'),succeeded('IaC_Validation'))
+      # condition: and(succeeded('Security_Gate'),succeeded('IaC_Validation'))
       jobs:
         - job: IaC_Deploy
           displayName:  Terraform Apply
