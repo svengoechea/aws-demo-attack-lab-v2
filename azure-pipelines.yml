@@ -19,6 +19,10 @@ stages:
               sourcePath: './infra'
               targetFilePattern: 'backend.tf'
               tokenRegex: '__(\w+)__'
+              replaceTokenList: |
+                backendAWSBucketName='$(backendServiceAWS)'
+                backendAWSKey='$(backendAWSKey)'
+                aws_Region='$(aws_Region)'
           - task: TerraformTaskV4@4
             displayName: Terraform Init
             inputs:
