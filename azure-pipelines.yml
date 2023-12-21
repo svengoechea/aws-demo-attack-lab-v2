@@ -12,7 +12,7 @@ stages:
       displayName: Infra Deploy
       jobs:
         - job: plan
-          displayName:  Terraform Dev Init and Apply
+          displayName:  Terraform Init Plan
           steps:
           - task: TerraformTaskV4@4
             inputs:
