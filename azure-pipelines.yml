@@ -23,20 +23,12 @@ stages:
               backendAWSBucketName: '$(backendAWSBucketName)'
               backendAWSKey: '$(Build.Repository.Name)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-        - job: terraform_validate
-          dependsOn: terraform_init
-          displayName:  Terraform Validate
-          steps:
           - task: TerraformTaskV4@4
             displayName: Terraform Validate
             inputs:
               provider: 'aws'
               command: 'validate'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-        - job: terraform_plan
-          dependsOn: terraform_validate
-          displayName:  Terraform Plan
-          steps:
           - task: TerraformTaskV4@4
             displayName: Terraform Plan
             inputs:
@@ -53,14 +45,10 @@ stages:
           - task: UsePythonVersion@0
             inputs:
               versionSpec: '3.8'
-        - job: checkov_install
-          displayName:  Instalacion Checkov
-          steps:
           - script: pip install checkov
-        - job: checkov_scan
-          displayName:  Escaneo con Checkov
-          steps:
+            displayName: Instalacion Checkov
           - script: |
               export BC_SOURCE="azuredevops"
               echo $BC_SOURCE
               checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules
+            displayName: Escaneo con Checkov
