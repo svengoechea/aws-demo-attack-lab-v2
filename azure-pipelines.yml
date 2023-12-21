@@ -8,10 +8,10 @@ variables:
   - group: aws-demo-attack-lab-v2
   
 stages:
-    - stage: Despliegue de Infraestructura
+    - stage: Infra_Deploy
       displayName: Despliegue de Infraestructura
       jobs:
-        - job: Validacion de IaC
+        - job: IaC_Validation
           displayName:  Validacion de IaC
           steps:
           - task: TerraformTaskV4@4
