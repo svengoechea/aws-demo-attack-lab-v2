@@ -67,15 +67,15 @@ stages:
         - job: IaC_Deploy
           displayName:  Terraform Apply
           steps:
-          - task: ReplaceTokens@1
-            inputs:
-              sourcePath: './infra'
-              targetFilePattern: 'backend.tf'
-              tokenRegex: '__(\w+)__'
-              replaceTokenList: |
-                backendAWSBucketName='$(backendServiceAWS)'
-                backendAWSKey='$(backendAWSKey)'
-                aws_Region='$(aws_Region)'
+          # - task: ReplaceTokens@1
+          #   inputs:
+          #     sourcePath: './infra'
+          #     targetFilePattern: 'backend.tf'
+          #     tokenRegex: '__(\w+)__'
+          #     replaceTokenList: |
+          #       backendAWSBucketName='$(backendServiceAWS)'
+          #       backendAWSKey='$(backendAWSKey)'
+          #       aws_Region='$(aws_Region)'
           - task: TerraformTaskV4@4
             displayName: Terraform Init
             inputs:
@@ -89,6 +89,6 @@ stages:
             displayName: Terraform Apply
             inputs:
               provider: 'aws'
-              command: 'destroy'
+              command: 'apply'
               environmentServiceNameAWS: '$(backendServiceAWS)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
