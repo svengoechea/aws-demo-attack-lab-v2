@@ -36,3 +36,17 @@ stages:
               command: 'plan'
               environmentServiceNameAWS: '$(backendServiceAWS)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+        - job: Security_Gate
+          displayName:  Escaneo de IaC (Security)
+          steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.8'
+            displayName: 'Install Python 3.8'
+          - script: pip install checkov
+            displayName: 'Installing Prisma Cloud Code Security'
+          - script: |
+              export BC_SOURCE="azuredevops"
+              echo $BC_SOURCE
+              checkov --prisma-api-url $(CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules
+            displayName: 'Scan Repo with Prisma Cloud'
