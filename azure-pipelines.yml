@@ -48,7 +48,5 @@ stages:
           - script: pip install checkov
             displayName: Instalacion Checkov
           - script: |
-              export BC_SOURCE="azuredevops"
-              echo $BC_SOURCE
               checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules
             displayName: Escaneo con Checkov
