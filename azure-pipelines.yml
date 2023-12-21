@@ -24,7 +24,7 @@ stages:
               backendAWSKey: '$(Build.Repository.Name)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
         - job: terraform_validate
-          dependsOn: IaC_Validation
+          dependsOn: terraform_init
           displayName:  Terraform Validate
           steps:
           - task: TerraformTaskV4@4
