@@ -8,11 +8,11 @@ variables:
   - group: aws-demo-attack-lab-v2
   
 stages:
-    - stage: Infra_Deploy
-      displayName: Infra Deploy
+    - stage: Despliegue de Infraestructura
+      displayName: Despliegue de Infraestructura
       jobs:
-        - job: init
-          displayName:  Infra Deploy
+        - job: Validacion de IaC
+          displayName:  Validacion de IaC
           steps:
           - task: TerraformTaskV4@4
             displayName: Terraform Init
