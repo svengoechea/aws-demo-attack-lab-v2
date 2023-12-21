@@ -11,7 +11,7 @@ stages:
     - stage: IaC_Validation
       displayName: Validacion de IaC
       jobs:
-        - job: terraform_init
+        - job: Validacion de IaC
           displayName:  Terraform Init
           steps:
           - task: TerraformTaskV4@4
@@ -37,12 +37,13 @@ stages:
               environmentServiceNameAWS: '$(backendServiceAWS)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
     - stage: Security_Gate
-      displayName: Escaneo de IaC (Security)
+      displayName: Escaneo de IaC
       jobs:
-        - job: python_install
-          displayName:  Instalacion Python
+        - job: Security_Gate
+          displayName:  Escaneo de IaC
           steps:
           - task: UsePythonVersion@0
+            displayName: Instalacion Python
             inputs:
               versionSpec: '3.8'
           - script: pip install checkov
