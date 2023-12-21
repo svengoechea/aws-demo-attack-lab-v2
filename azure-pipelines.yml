@@ -11,8 +11,8 @@ stages:
     - stage: IaC_Validation
       displayName: Validacion de IaC
       jobs:
-        - job: Validacion de IaC
-          displayName:  Terraform Init
+        - job: IaC_Validation
+          displayName:  Validacion de IaC
           steps:
           - task: TerraformTaskV4@4
             displayName: Terraform Init
