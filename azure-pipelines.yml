@@ -8,11 +8,11 @@ variables:
   - group: aws-demo-attack-lab-v2
   
 stages:
-    - stage: Infra_Deploy
-      displayName: Despliegue de Infraestructura
+    - stage: IaC_Validation
+      displayName: Validacion de IaC
       jobs:
-        - job: IaC_Validation
-          displayName:  Validacion de IaC
+        - job: terraform_init
+          displayName:  Terraform Init
           steps:
           - task: TerraformTaskV4@4
             displayName: Terraform Init
@@ -23,12 +23,18 @@ stages:
               backendAWSBucketName: '$(backendAWSBucketName)'
               backendAWSKey: '$(Build.Repository.Name)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+        - job: terraform_validate
+          displayName:  Terraform Validate
+          steps:
           - task: TerraformTaskV4@4
             displayName: Terraform Validate
             inputs:
               provider: 'aws'
               command: 'validate'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+        - job: terraform_plan
+          displayName:  Terraform Plan
+          steps:
           - task: TerraformTaskV4@4
             displayName: Terraform Plan
             inputs:
@@ -39,17 +45,20 @@ stages:
     - stage: Security_Gate
       displayName: Escaneo de IaC (Security)
       jobs:
-        - job: Security_Gate
-          displayName:  Escaneo de IaC (Security)
+        - job: python_install
+          displayName:  Instalacion Python
           steps:
           - task: UsePythonVersion@0
             inputs:
               versionSpec: '3.8'
-            displayName: 'Install Python 3.8'
+        - job: checkov_install
+          displayName:  Instalacion Checkov
+          steps:
           - script: pip install checkov
-            displayName: 'Installing Prisma Cloud Code Security'
+        - job: checkov_scan
+          displayName:  Escaneo con Checkov
+          steps:
           - script: |
               export BC_SOURCE="azuredevops"
               echo $BC_SOURCE
               checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules
-            displayName: 'Scan Repo with Prisma Cloud'
