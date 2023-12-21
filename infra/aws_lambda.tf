@@ -19,12 +19,12 @@ EOF
 
 resource "aws_lambda_function" "analysis_lambda" {
   # lambda have plain text secrets in environment variables
-  filename      = "infra/resources/lambda_function_payload.zip"
+  filename      = "${path.root}/infra/resources/lambda_function_payload.zip"
   function_name = "${var.deployment_name}-${random_string.unique_id.result}"
   role          = aws_iam_role.iam_for_lambda.arn
   handler       = "lambda.lambda_handler"
 
-  source_code_hash = filebase64sha256("infra/resources/lambda_function_payload.zip")
+  source_code_hash = filebase64sha256("${path.root}/infra/resources/lambda_function_payload.zip")
 
   runtime = "python3.7"
 
