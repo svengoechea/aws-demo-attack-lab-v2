@@ -8,9 +8,9 @@ variables:
   - group: aws-demo-attack-lab-v2
   
 stages:
-    - stage: IaC_Validation
-      displayName: Validacion de IaC
-      jobs:
+    # - stage: IaC_Validation
+    #   displayName: Validacion de IaC
+    #   jobs:
         # - job: IaC_Validation
         #   displayName:  Terraform Plan
         #   steps:
