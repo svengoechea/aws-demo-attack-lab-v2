@@ -36,6 +36,9 @@ stages:
               command: 'plan'
               environmentServiceNameAWS: '$(backendServiceAWS)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+    - stage: Security_Gate
+      displayName: Escaneo de IaC (Security)
+      jobs:
         - job: Security_Gate
           displayName:  Escaneo de IaC (Security)
           steps:
@@ -48,5 +51,5 @@ stages:
           - script: |
               export BC_SOURCE="azuredevops"
               echo $BC_SOURCE
-              checkov --prisma-api-url $(CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules
+              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules
             displayName: 'Scan Repo with Prisma Cloud'
