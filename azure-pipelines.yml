@@ -12,7 +12,7 @@ stages:
       displayName: Infra Deploy
       jobs:
         - job: init
-          displayName:  Terraform Init
+          displayName:  Infra Deploy
           steps:
           - task: TerraformTaskV4@4
             displayName: Terraform Init
@@ -23,18 +23,12 @@ stages:
               backendAWSBucketName: '$(backendAWSBucketName)'
               backendAWSKey: '$(Build.Repository.Name)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-        - job: validate
-          displayName:  Terraform Validate
-          steps:
-            - task: TerraformTaskV4@4
-              displayName: Terraform Validate
-              inputs:
-                provider: 'aws'
-                command: 'validate'
-                workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-        - job: plan
-          displayName:  Terraform Plan
-          steps:
+          - task: TerraformTaskV4@4
+            displayName: Terraform Validate
+            inputs:
+              provider: 'aws'
+              command: 'validate'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
           - task: TerraformTaskV4@4
             displayName: Terraform Plan
             inputs:
