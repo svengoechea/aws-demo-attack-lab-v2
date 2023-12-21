@@ -1,13 +1,13 @@
 trigger:
   - main
   
-  pool:
+pool:
     vmImage: ubuntu-latest
   
-  variables:
+variables:
   - group: aws-demo-attack-lab-v2
   
-  stages:
+stages:
     - stage: Infra Deploy
       displayName: Infra Deploy
       jobs:
