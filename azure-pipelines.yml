@@ -15,6 +15,7 @@ stages:
           displayName:  Terraform Init Plan
           steps:
           - task: TerraformTaskV4@4
+            displayName: Terraform Init
             inputs:
               provider: 'aws'
               command: 'init'
@@ -23,11 +24,12 @@ stages:
               backendAWSKey: '$(Build.Repository.Name)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
           - task: TerraformTaskV4@4
-            inputs:
-              provider: 'aws'
-              command: 'validate'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+            displayName: Terraform Validate
+            provider: 'aws'
+            command: 'validate'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
           - task: TerraformTaskV4@4
+            displayName: Terraform Plan
             inputs:
               provider: 'aws'
               command: 'plan'
