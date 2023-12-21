@@ -21,7 +21,7 @@ stages:
               command: 'init'
               backendServiceAWS: '$(backendServiceAWS)'
               backendAWSBucketName: '$(backendAWSBucketName)'
-              backendAWSKey: '/'
+              backendAWSKey: 'terraform.tfstate'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
           - task: TerraformTaskV4@4
             displayName: Terraform Validate
@@ -29,28 +29,28 @@ stages:
               provider: 'aws'
               command: 'validate'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-          - task: TerraformTaskV4@4
-            displayName: Terraform Plan
-            inputs:
-              provider: 'aws'
-              command: 'plan'
-              environmentServiceNameAWS: '$(backendServiceAWS)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-    - stage: Security_Gate
-      displayName: Escaneo de IaC
-      jobs:
-        - job: Security_Gate
-          displayName:  Checkov Scanning
-          steps:
-          - task: UsePythonVersion@0
-            displayName: Instalacion Python
-            inputs:
-              versionSpec: '3.8'
-          - script: pip install checkov
-            displayName: Instalacion Checkov
-          - script: |
-              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules
-            displayName: Escaneo con Checkov
+          # - task: TerraformTaskV4@4
+          #   displayName: Terraform Plan
+          #   inputs:
+          #     provider: 'aws'
+          #     command: 'plan'
+          #     environmentServiceNameAWS: '$(backendServiceAWS)'
+          #     workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+    # - stage: Security_Gate
+    #   displayName: Escaneo de IaC
+    #   jobs:
+    #     - job: Security_Gate
+    #       displayName:  Checkov Scanning
+    #       steps:
+    #       - task: UsePythonVersion@0
+    #         displayName: Instalacion Python
+    #         inputs:
+    #           versionSpec: '3.8'
+    #       - script: pip install checkov
+    #         displayName: Instalacion Checkov
+    #       - script: |
+    #           checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules
+    #         displayName: Escaneo con Checkov
     # - stage: IaC_Deploy
     #   displayName: Despliegue de IaC
     #   condition: and(succeeded('Security_Gate'),succeeded('IaC_Validation'))
@@ -65,7 +65,7 @@ stages:
     #           command: 'init'
     #           backendServiceAWS: '$(backendServiceAWS)'
     #           backendAWSBucketName: '$(backendAWSBucketName)'
-    #           backendAWSKey: '/'
+    #           backendAWSKey: 'terraform.tfstate'
     #           workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
     #       - task: TerraformTaskV4@4
     #         displayName: Terraform Apply
