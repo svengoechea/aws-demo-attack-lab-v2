@@ -12,7 +12,7 @@ stages:
       displayName: Validacion de IaC
       jobs:
         - job: IaC_Validation
-          displayName:  Validacion de IaC
+          displayName:  Terraform Plan
           steps:
           - task: TerraformTaskV4@4
             displayName: Terraform Init
@@ -40,7 +40,7 @@ stages:
       displayName: Escaneo de IaC
       jobs:
         - job: Security_Gate
-          displayName:  Escaneo de IaC
+          displayName:  Checkov Scanning
           steps:
           - task: UsePythonVersion@0
             displayName: Instalacion Python
@@ -51,3 +51,27 @@ stages:
           - script: |
               checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules
             displayName: Escaneo con Checkov
+    - stage: IaC_Deploy
+      displayName: Despliegue de IaC
+      condition: and(succeeded('Security_Gate'),succeeded('IaC_Validation'))
+      jobs:
+        - job: IaC_Deploy
+          displayName:  Terraform Apply
+          steps:
+          - task: TerraformTaskV4@4
+            displayName: Terraform Init
+            inputs:
+              provider: 'aws'
+              command: 'init'
+              backendServiceAWS: '$(backendServiceAWS)'
+              backendAWSBucketName: '$(backendAWSBucketName)'
+              backendAWSKey: '$(Build.Repository.Name)'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+          - task: TerraformTaskV4@4
+            displayName: Terraform Apply
+            inputs:
+              provider: 'aws'
+              command: 'apply'
+              environmentServiceNameAWS: '$(backendServiceAWS)'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+              commandOptions: '-auto-approve'
