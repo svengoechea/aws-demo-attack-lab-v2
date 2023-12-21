@@ -74,4 +74,4 @@ stages:
               command: 'apply'
               environmentServiceNameAWS: '$(backendServiceAWS)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-              commandOptions: '-auto-approve'
+              commandOptions: '-input=false tfplan'
