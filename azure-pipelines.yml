@@ -77,7 +77,7 @@ stages:
               commandOptions: '-refresh=false'
     - stage: docker_build
       displayName: Docker Build/Scan
-      condition: succeeded('IaC_Deploy')
+      # condition: succeeded('IaC_Deploy')
       jobs:
         - job: docker_build
           displayName: Docker Build/Push
