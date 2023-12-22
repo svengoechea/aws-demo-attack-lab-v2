@@ -107,18 +107,20 @@ stages:
               targetPath: '$(Build.ArtifactStagingDirectory)/image.tar'
               artifact: 'myArtifact'
               publishLocation: 'pipeline'
-    # - stage: docker_push
-    #   displayName: Docker Push
-    #   condition: succeeded('docker_build')
-    #   jobs:
-    #     - job: docker_push
-    #       displayName: Docker Push
-    #       steps:
-    #       - task: Docker@2
-    #         displayName: dockerPush
-    #         enabled: False
-    #         inputs:
-    #           containerRegistry: 29c5a2ee-3cf2-453f-bc6c-af40c852272e
-    #           repository: $(imageName)
-    #           command: push
-    #           tags: $(imageTag)
+    - stage: docker_push
+      displayName: Docker Push
+      condition: succeeded('docker_build')
+      jobs:
+        - job: docker_push
+          displayName: Docker Push
+          steps:
+          - bash: |
+              docker load --input $(Agent.ReleaseDirectory)/_BuildArtifact/myArtifact/image.tar
+          - task: Docker@2
+            displayName: dockerPush
+            enabled: False
+            inputs:
+              containerRegistry: 29c5a2ee-3cf2-453f-bc6c-af40c852272e
+              repository: $(imageName)
+              command: push
+              tags: $(imageTag)
