@@ -128,4 +128,4 @@ stages:
               containerRegistry: 29c5a2ee-3cf2-453f-bc6c-af40c852272e
               repository: $(imageName)
               command: push
-              tags: $(imageTag)
+              tags: $(Build.BuildNumber)
