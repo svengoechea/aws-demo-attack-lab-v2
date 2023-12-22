@@ -8,10 +8,10 @@ variables:
   - group: aws-demo-attack-lab-v2
   
 stages:
-    - stage: IaC_Validation
+    - stage: iac_validation
       displayName: Validacion de IaC
       jobs:
-        - job: IaC_Validation
+        - job: iac_validation
           displayName:  Terraform Plan
           steps:
           - task: TerraformTaskV4@4
@@ -36,10 +36,10 @@ stages:
               command: 'plan'
               environmentServiceNameAWS: '$(backendServiceAWS)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-    - stage: Security_Gate
+    - stage: security_gate
       displayName: Escaneo de IaC
       jobs:
-        - job: Security_Gate
+        - job: security_gate
           displayName:  Checkov Scanning
           steps:
           - task: UsePythonVersion@0
@@ -51,9 +51,9 @@ stages:
           - script: |
               checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules
             displayName: Escaneo con Checkov
-    - stage: IaC_Deploy
+    - stage: iac_deploy
       displayName: Despliegue de IaC
-      condition: and(succeeded('Security_Gate'),succeeded('IaC_Validation'))
+      condition: and(succeeded('security_gate'),succeeded('iac_validation'))
       jobs:
         - job: IaC_Deploy
           displayName:  Terraform Apply
@@ -75,3 +75,51 @@ stages:
               environmentServiceNameAWS: '$(backendServiceAWS)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
               commandOptions: '-refresh=false'
+    - stage: docker_build
+      displayName: Docker Build/Scan
+      condition: succeeded('IaC_Deploy')
+      jobs:
+        - job: docker_build
+          displayName: Docker Build/Push
+          steps:
+          - checkout: self
+            fetchDepth: 1
+          - task: Docker@2
+            displayName: dockerBuild
+            inputs:
+              containerRegistry: 29c5a2ee-3cf2-453f-bc6c-af40c852272e
+              repository: $(imageName)
+              command: build
+              Dockerfile: '$(dockerfilePath)/Dockerfile'
+              tags: $(Build.BuildNumber)
+          - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
+            displayName: prismaCloudScan
+            inputs:
+              twistlockService: 8f6f8a0a-315c-40b0-a688-d1773f36ed7b
+              artifact: $(imageName):$(Build.BuildNumber)
+          - task: Bash@3
+            displayName: Save Docker Image
+            inputs:
+              targetType: 'inline'
+              script: |
+                docker save -o $(Build.ArtifactStagingDirectory)/image.tar image:$(Build.BuildNumber)
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/image.tar'
+              artifact: 'my-artifact'
+              publishLocation: 'pipeline'
+    # - stage: docker_push
+    #   displayName: Docker Push
+    #   condition: succeeded('docker_build')
+    #   jobs:
+    #     - job: docker_push
+    #       displayName: Docker Push
+    #       steps:
+    #       - task: Docker@2
+    #         displayName: dockerPush
+    #         enabled: False
+    #         inputs:
+    #           containerRegistry: 29c5a2ee-3cf2-453f-bc6c-af40c852272e
+    #           repository: $(imageName)
+    #           command: push
+    #           tags: $(imageTag)
