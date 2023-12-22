@@ -117,7 +117,7 @@ stages:
           - task: DownloadPipelineArtifact@2
             inputs:
               buildType: 'current'
-              artifactName: 'MY_ARTIFACT'
+              artifactName: 'myArtifact'
               targetPath: '$(Pipeline.Workspace)'
           - bash: |
               docker load --input '$(Pipeline.Workspace)/image.tar'
