@@ -101,10 +101,10 @@ stages:
             displayName: Save Docker Image
             inputs:
               targetType: 'inline'
-              script: docker save -o $(Build.ArtifactStagingDirectory)/image.tar $(imageName):$(Build.BuildNumber)
+              script: docker save -o $(Pipeline.Workspace)/image.tar $(imageName):$(Build.BuildNumber)
           - task: PublishPipelineArtifact@1
             inputs:
-              targetPath: '$(Build.ArtifactStagingDirectory)/image.tar'
+              targetPath: '$(Pipeline.Workspace)/image.tar'
               artifact: 'myArtifact'
               publishLocation: 'pipeline'
     - stage: docker_push
@@ -115,7 +115,7 @@ stages:
           displayName: Docker Push
           steps:
           - bash: |
-              docker load --input $(Build.ArtifactStagingDirectory)/image.tar
+              docker load --input '$(Pipeline.Workspace)/image.tar'
           - task: Docker@2
             displayName: dockerPush
             enabled: False
