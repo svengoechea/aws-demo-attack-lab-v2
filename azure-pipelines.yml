@@ -105,7 +105,7 @@ stages:
           - task: PublishPipelineArtifact@1
             inputs:
               targetPath: '$(Build.ArtifactStagingDirectory)/image.tar'
-              artifact: '$(imageName)'
+              artifact: 'myArtifact'
               publishLocation: 'pipeline'
     # - stage: docker_push
     #   displayName: Docker Push
