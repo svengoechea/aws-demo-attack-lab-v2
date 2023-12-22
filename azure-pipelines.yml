@@ -115,7 +115,7 @@ stages:
           displayName: Docker Push
           steps:
           - bash: |
-              docker load --input $(Agent.ReleaseDirectory)/_BuildArtifact/myArtifact/image.tar
+              docker load --input $(Build.ArtifactStagingDirectory)/image.tar
           - task: Docker@2
             displayName: dockerPush
             enabled: False
