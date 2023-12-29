@@ -212,12 +212,13 @@ stages:
       displayName: K8s App
       condition: always()
       variables:
-        kubeConfig = $(dependencies.iac_validation.IaC_Outputs.outputs['getKubeConfig.kube_config'])
+        - name: kubeConfig
+          value: $(dependencies.iac_validation.IaC_Outputs.outputs['getKubeConfig.kube_config'])
       jobs:
         - job: k8s_app
           displayName: k8s_app
           steps:
-          - bash: kubectl version -o json
+          - bash: echo $(kubeConfig)
             displayName: 'kubectl version'
             continueOnError: true
           - bash: aws --version
