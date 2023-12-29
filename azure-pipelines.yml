@@ -92,6 +92,7 @@ stages:
           displayName:  Terraform Apply
           steps:
           - task: TerraformTaskV4@4
+            condition: always()
             displayName: Terraform Init
             inputs:
               provider: 'aws'
