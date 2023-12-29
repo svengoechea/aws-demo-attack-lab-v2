@@ -21,7 +21,7 @@ stages:
             - bash: ls -l
             - bash: |
                 PATH_FILTER="infra/"
-                CHANGED_FILES=$(git diff HEAD --name-only)
+                CHANGED_FILES=$(git diff HEAD HEAD~ --name-only)
                 MATCH_COUNT=0
 
                 echo "Checking for file changes..."
