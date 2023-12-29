@@ -18,7 +18,8 @@ stages:
         - job: check_changes
           displayName: 'Check changes'
           steps:
-            - bash: ls -l
+            - bash: |
+                git diff HEAD HEAD~ --name-only
             - bash: |
                 PATH_FILTER="infra/"
                 CHANGED_FILES=$(git diff HEAD HEAD~ --name-only)
