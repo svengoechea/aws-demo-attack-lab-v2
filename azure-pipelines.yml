@@ -218,7 +218,8 @@ stages:
         - job: k8s_app
           displayName: k8s_app
           steps:
-          - bash: echo $(kubeConfig)
+          - script: |
+              echo $(kubeConfig)
             displayName: 'kubectl version'
             continueOnError: true
           - bash: aws --version
