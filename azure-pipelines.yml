@@ -20,7 +20,7 @@ stages:
           steps:
             - checkout: self
               fetchDepth: 2
-            - bash: git diff HEAD --name-only
+            - bash: git diff HEAD HEAD~ --name-only
             - bash: |
                 PATH_FILTER="infra/"
                 CHANGED_FILES=$(git diff HEAD HEAD~ --name-only)
