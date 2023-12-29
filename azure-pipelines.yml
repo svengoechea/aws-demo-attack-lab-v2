@@ -18,6 +18,8 @@ stages:
         - job: check_changes
           displayName: 'Check changes'
           steps:
+            - checkout: self
+              fetchDepth: 2
             - bash: git diff HEAD --name-only
             - bash: |
                 PATH_FILTER="infra/"
