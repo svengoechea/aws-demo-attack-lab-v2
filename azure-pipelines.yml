@@ -44,7 +44,7 @@ stages:
                 fi
               name: check_infra_changes
               displayName: 'Check changed files'
-        - job: IaC_Outputs
+        - job: iac_outputs
           displayName:  Terraform Outputs
           steps:
           - task: TerraformTaskV4@4
@@ -214,13 +214,13 @@ stages:
       condition: always()
       variables:
         - name: kubeConfig
-          value: $[ dependencies.iac_validation.IaC_Outputs.outputs['getKubeConfig.KUBE_CONFIG'] ]
+          value: $(dependencies.iac_validation.iac_outputs.outputs['getKubeConfig.KUBE_CONFIG'])
       jobs:
         - job: k8s_app
           displayName: k8s_app
           steps:
           - script: |
-              echo $(kubeConfig)
+              echo $kubeConfig
             displayName: 'kubectl version'
             continueOnError: true
           - bash: aws --version
