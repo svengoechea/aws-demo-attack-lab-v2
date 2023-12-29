@@ -193,14 +193,14 @@ stages:
               command: push
               tags: $(Build.BuildNumber)
     # - stage: k8s_app
-      displayName: K8s App
-      condition: always()
-      jobs:
-        - job: k8s_app
-          displayName: k8s_app
-          steps:
-          - bash: kubectl version -o json
-            displayName: 'kubectl version'
-            continueOnError: true
-          - bash: aws --version
-            displayName: 'aws version'
+      # displayName: K8s App
+      # condition: always()
+      # jobs:
+      #   - job: k8s_app
+      #     displayName: k8s_app
+      #     steps:
+      #     - bash: kubectl version -o json
+      #       displayName: 'kubectl version'
+      #       continueOnError: true
+      #     - bash: aws --version
+      #       displayName: 'aws version'
