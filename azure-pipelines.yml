@@ -86,7 +86,6 @@ stages:
             displayName: Escaneo con Checkov
     - stage: iac_deploy
       displayName: Despliegue de IaC
-      dependsOn: security_gate
       condition: eq(dependencies.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
       jobs:
         - job: IaC_Deploy
