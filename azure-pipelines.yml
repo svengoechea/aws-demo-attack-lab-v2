@@ -15,7 +15,7 @@ stages:
     - stage: iac_validation
       displayName: Validacion de IaC
       jobs:
-        - job: check_changes
+        - job: check_infra_changes
           displayName: 'Check changes'
           steps:
             - checkout: self
@@ -41,12 +41,12 @@ stages:
                 else
                   echo "##vso[task.setvariable variable=SOURCE_CODE_CHANGED;isOutput=true]false"
                 fi
-              name: check_changes
+              name: check_infra_changes
               displayName: 'Check changed files'
 
         - job: iac_validation
-          dependsOn: check_changes
-          condition: eq(dependencies.check_changes.outputs['check_changes.SOURCE_CODE_CHANGED'], 'true')
+          dependsOn: check_infra_changes
+          condition: eq(dependencies.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
           displayName:  Terraform Plan
           steps:
           - task: TerraformTaskV4@4
@@ -71,96 +71,124 @@ stages:
               command: 'plan'
               environmentServiceNameAWS: '$(backendServiceAWS)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-    # - stage: security_gate
-    #   displayName: Escaneo de IaC
-    #   jobs:
-    #     - job: security_gate
-    #       displayName:  Checkov Scanning
-    #       steps:
-    #       - task: UsePythonVersion@0
-    #         displayName: Instalacion Python
-    #         inputs:
-    #           versionSpec: '3.8'
-    #       - script: pip install checkov
-    #         displayName: Instalacion Checkov
-    #       - script: |
-    #           checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules
-    #         displayName: Escaneo con Checkov
-    # - stage: iac_deploy
-    #   displayName: Despliegue de IaC
-    #   condition: and(succeeded('security_gate'),succeeded('iac_validation'))
-    #   jobs:
-    #     - job: IaC_Deploy
-    #       displayName:  Terraform Apply
-    #       steps:
-    #       - task: TerraformTaskV4@4
-    #         displayName: Terraform Init
-    #         inputs:
-    #           provider: 'aws'
-    #           command: 'init'
-    #           backendServiceAWS: '$(backendServiceAWS)'
-    #           backendAWSBucketName: '$(backendAWSBucketName)'
-    #           backendAWSKey: '$(backendAWSKey)'
-    #           workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-    #       - task: TerraformTaskV4@4
-    #         displayName: Terraform Apply
-    #         inputs:
-    #           provider: 'aws'
-    #           command: 'apply'
-    #           environmentServiceNameAWS: '$(backendServiceAWS)'
-    #           workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-    #           commandOptions: '-refresh=false'
-    # - stage: docker_build
-    #   displayName: Docker Build/Scan
-    #   # condition: succeeded('IaC_Deploy')
-    #   jobs:
-    #     - job: docker_build
-    #       displayName: Docker Build/Push
-    #       steps:
-    #       - checkout: self
-    #         fetchDepth: 1
-    #       - task: Docker@2
-    #         displayName: dockerBuild
-    #         inputs:
-    #           containerRegistry: 29c5a2ee-3cf2-453f-bc6c-af40c852272e
-    #           repository: $(imageName)
-    #           command: build
-    #           Dockerfile: '$(dockerfilePath)/Dockerfile'
-    #           tags: $(Build.BuildNumber)
-    #       - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
-    #         displayName: prismaCloudScan
-    #         inputs:
-    #           twistlockService: 8f6f8a0a-315c-40b0-a688-d1773f36ed7b
-    #           artifact: $(imageName):$(Build.BuildNumber)
-    #       - task: Bash@3
-    #         displayName: Save Docker Image
-    #         inputs:
-    #           targetType: 'inline'
-    #           script: docker save -o $(Pipeline.Workspace)/image.tar $(imageName):$(Build.BuildNumber)
-    #       - task: PublishPipelineArtifact@1
-    #         inputs:
-    #           targetPath: '$(Pipeline.Workspace)/image.tar'
-    #           artifact: 'myArtifact'
-    #           publishLocation: 'pipeline'
-    # - stage: docker_push
-    #   displayName: Docker Push
-    #   condition: succeeded('docker_build')
-    #   jobs:
-    #     - job: docker_push
-    #       displayName: Docker Push
-    #       steps:
-    #       - task: DownloadPipelineArtifact@2
-    #         inputs:
-    #           buildType: 'current'
-    #           artifactName: 'myArtifact'
-    #           targetPath: '$(Pipeline.Workspace)'
-    #       - bash: |
-    #           docker load --input '$(Pipeline.Workspace)/image.tar'
-    #         displayName: 'dockerLoadImage'
-    #       - task: Docker@2
-    #         displayName: dockerPush
-    #         inputs:
-    #           containerRegistry: 29c5a2ee-3cf2-453f-bc6c-af40c852272e
-    #           repository: $(imageName)
-    #           command: push
-    #           tags: $(Build.BuildNumber)
+    - stage: security_gate
+      displayName: Escaneo de IaC
+      jobs:
+        - job: security_gate
+          displayName:  Checkov Scanning
+          steps:
+          - task: UsePythonVersion@0
+            displayName: Instalacion Python
+            inputs:
+              versionSpec: '3.8'
+          - script: pip install checkov
+            displayName: Instalacion Checkov
+          - script: |
+              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules
+            displayName: Escaneo con Checkov
+    - stage: iac_deploy
+      displayName: Despliegue de IaC
+      condition: and(succeeded('security_gate'),succeeded('iac_validation'))
+      jobs:
+        - job: IaC_Deploy
+          displayName:  Terraform Apply
+          steps:
+          - task: TerraformTaskV4@4
+            displayName: Terraform Init
+            inputs:
+              provider: 'aws'
+              command: 'init'
+              backendServiceAWS: '$(backendServiceAWS)'
+              backendAWSBucketName: '$(backendAWSBucketName)'
+              backendAWSKey: '$(backendAWSKey)'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+          - task: TerraformTaskV4@4
+            displayName: Terraform Apply
+            inputs:
+              provider: 'aws'
+              command: 'apply'
+              environmentServiceNameAWS: '$(backendServiceAWS)'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+              commandOptions: '-refresh=false'
+    - stage: docker_build
+      displayName: Docker Build/Scan
+      # condition: succeeded('IaC_Deploy')
+      jobs:
+        - job: check_app_changes
+          displayName: 'Check changes'
+          steps:
+            - checkout: self
+              fetchDepth: 2
+            - bash: |
+                PATH_FILTER="app/"
+                CHANGED_FILES=$(git diff HEAD HEAD~ --name-only)
+                MATCH_COUNT=0
+
+                echo "Checking for file changes..."
+                for FILE in $CHANGED_FILES
+                do
+                  if [[ $FILE == *$PATH_FILTER* ]]; then
+                    echo "MATCH:  ${FILE} changed"
+                    MATCH_COUNT=$(($MATCH_COUNT+1))
+                  else
+                    echo "IGNORE: ${FILE} changed"
+                  fi
+                done
+                echo "$MATCH_COUNT match(es) for filter '$PATH_FILTER' found."
+                if [[ $MATCH_COUNT -gt 0 ]]; then
+                  echo "##vso[task.setvariable variable=SOURCE_CODE_CHANGED;isOutput=true]true"
+                else
+                  echo "##vso[task.setvariable variable=SOURCE_CODE_CHANGED;isOutput=true]false"
+                fi
+              name: check_app_changes
+              displayName: 'Check changed files'
+        - job: docker_build
+          dependsOn: check_app_changes
+          condition: eq(dependencies.check_app_changes.outputs['check_app_changes.SOURCE_CODE_CHANGED'], 'true')
+          displayName: Docker Build/Push
+          steps:
+          - task: Docker@2
+            displayName: dockerBuild
+            inputs:
+              containerRegistry: 29c5a2ee-3cf2-453f-bc6c-af40c852272e
+              repository: $(imageName)
+              command: build
+              Dockerfile: '$(dockerfilePath)/Dockerfile'
+              tags: $(Build.BuildNumber)
+          - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
+            displayName: prismaCloudScan
+            inputs:
+              twistlockService: 8f6f8a0a-315c-40b0-a688-d1773f36ed7b
+              artifact: $(imageName):$(Build.BuildNumber)
+          - task: Bash@3
+            displayName: Save Docker Image
+            inputs:
+              targetType: 'inline'
+              script: docker save -o $(Pipeline.Workspace)/image.tar $(imageName):$(Build.BuildNumber)
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(Pipeline.Workspace)/image.tar'
+              artifact: 'myArtifact'
+              publishLocation: 'pipeline'
+    - stage: docker_push
+      displayName: Docker Push
+      condition: succeeded('docker_build')
+      jobs:
+        - job: docker_push
+          displayName: Docker Push
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              artifactName: 'myArtifact'
+              targetPath: '$(Pipeline.Workspace)'
+          - bash: |
+              docker load --input '$(Pipeline.Workspace)/image.tar'
+            displayName: 'dockerLoadImage'
+          - task: Docker@2
+            displayName: dockerPush
+            inputs:
+              containerRegistry: 29c5a2ee-3cf2-453f-bc6c-af40c852272e
+              repository: $(imageName)
+              command: push
+              tags: $(Build.BuildNumber)
