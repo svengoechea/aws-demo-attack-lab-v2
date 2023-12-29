@@ -14,7 +14,7 @@ variables:
 stages:
     - stage: iac_validation
       condition: always()
-      displayName: Validacion de IaC
+      displayName: IaC Validation/Scan
       jobs:
         - job: check_infra_changes
           displayName: 'Check changes'
@@ -85,7 +85,7 @@ stages:
               checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules
             displayName: Escaneo con Checkov
     - stage: iac_deploy
-      displayName: Despliegue de IaC
+      displayName: IaC Deployment
       condition: eq(dependencies.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
       jobs:
         - job: IaC_Deploy
@@ -100,6 +100,13 @@ stages:
               backendAWSBucketName: '$(backendAWSBucketName)'
               backendAWSKey: '$(backendAWSKey)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+          - task: TerraformTaskV4@4
+            condition: always()
+            displayName: Terraform Outputs
+            inputs:
+              provider: 'aws'
+              command: 'output'
+              environmentServiceNameAWS: '$(backendServiceAWS)'
           - task: TerraformTaskV4@4
             displayName: Terraform Apply
             inputs:
