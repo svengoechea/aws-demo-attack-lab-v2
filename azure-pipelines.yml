@@ -44,7 +44,6 @@ stages:
                 fi
               name: check_infra_changes
               displayName: 'Check changed files'
-
         - job: iac_validation
           dependsOn: check_infra_changes
           condition: eq(dependencies.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
@@ -72,12 +71,8 @@ stages:
               command: 'plan'
               environmentServiceNameAWS: '$(backendServiceAWS)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-    - stage: security_gate
-      dependsOn: iac_validation
-      condition: eq(dependencies.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
-      displayName: Escaneo de IaC
-      jobs:
         - job: security_gate
+          dependsOn: iac_validation
           displayName:  Checkov Scanning
           steps:
           - task: UsePythonVersion@0
@@ -197,8 +192,8 @@ stages:
               repository: $(imageName)
               command: push
               tags: $(Build.BuildNumber)
-    - stage: k8s_app
-      displayName: Docker Push
+    # - stage: k8s_app
+      displayName: K8s App
       condition: always()
       jobs:
         - job: k8s_app
