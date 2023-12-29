@@ -115,7 +115,6 @@ stages:
               commandOptions: '-refresh=false'
     - stage: docker_build
       displayName: Docker Build/Scan
-      # condition: succeeded('IaC_Deploy')
       jobs:
         - job: check_app_changes
           displayName: 'Check changes'
