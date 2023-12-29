@@ -57,9 +57,8 @@ stages:
               backendAWSKey: '$(backendAWSKey)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
           - bash: |
-              echo getKubeConfig="terraform -chdir=$(System.DefaultWorkingDirectory)/infra output update_kube_config"
-              echo $getKubeConfig | bash
-              echo ##vso[task.setvariable variable=kube_config;isOutput=true]echo $getKubeConfig | bash)
+              terraform -chdir=$(System.DefaultWorkingDirectory)/infra output -raw update_kube_config
+              echo ##vso[task.setvariable variable=KUBE_CONFIG;isOutput=true]$(terraform -chdir=$(System.DefaultWorkingDirectory)/infra output -raw update_kube_config))
             name: getKubeConfig
         - job: iac_validation
           dependsOn: check_infra_changes
@@ -215,7 +214,7 @@ stages:
       condition: always()
       variables:
         - name: kubeConfig
-          value: $[ dependencies.iac_validation.IaC_Outputs.outputs['getKubeConfig.kube_config'] ]
+          value: $[ dependencies.iac_validation.IaC_Outputs.outputs['getKubeConfig.KUBE_CONFIG'] ]
       jobs:
         - job: k8s_app
           displayName: k8s_app
