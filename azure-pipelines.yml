@@ -72,6 +72,8 @@ stages:
               environmentServiceNameAWS: '$(backendServiceAWS)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
     - stage: security_gate
+      dependsOn: iac_validation
+      condition: eq(dependencies.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
       displayName: Escaneo de IaC
       jobs:
         - job: security_gate
@@ -88,7 +90,8 @@ stages:
             displayName: Escaneo con Checkov
     - stage: iac_deploy
       displayName: Despliegue de IaC
-      condition: and(succeeded('security_gate'),succeeded('iac_validation'))
+      dependsOn: security_gate
+      condition: eq(dependencies.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
       jobs:
         - job: IaC_Deploy
           displayName:  Terraform Apply
@@ -172,7 +175,8 @@ stages:
               publishLocation: 'pipeline'
     - stage: docker_push
       displayName: Docker Push
-      condition: succeeded('docker_build')
+      dependsOn: docker_build
+      condition: eq(dependencies.check_app_changes.outputs['check_app_changes.SOURCE_CODE_CHANGED'], 'true')
       jobs:
         - job: docker_push
           displayName: Docker Push
