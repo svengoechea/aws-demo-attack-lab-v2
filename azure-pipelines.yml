@@ -1,8 +1,9 @@
 trigger:
-  paths:
-    include:
-      - infra/*
-      - app/src/*
+  - main
+  # paths:
+  #   include:
+  #     - infra/*
+  #     - app/src/*
   
 pool:
     vmImage: ubuntu-latest
