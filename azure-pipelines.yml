@@ -220,8 +220,8 @@ stages:
         - job: k8s_app
           displayName: k8s_app
           steps:
-          - script: |
-              env
+          - bash: |
+              echo "You can use macro syntax for variables: $(kubeConfig)"
             displayName: 'kubectl version'
             continueOnError: true
           - bash: aws --version
