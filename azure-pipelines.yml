@@ -57,9 +57,7 @@ stages:
               backendAWSKey: '$(backendAWSKey)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
           - bash: |
-              terraform -chdir=$(System.DefaultWorkingDirectory)/infra output -raw update_kube_config
               echo ##vso[task.setvariable variable=KUBE_CONFIG;isOutput=true]$(terraform -chdir=$(System.DefaultWorkingDirectory)/infra output -raw update_kube_config))
-              env
             name: getKubeConfig
         - job: iac_validation
           dependsOn: check_infra_changes
@@ -222,7 +220,11 @@ stages:
           steps:
           - bash: |
               echo "You can use macro syntax for variables: $(kubeConfig)"
-            displayName: 'kubectl version'
+            displayName: 'echo variable 1'
+            continueOnError: true
+          - bash: |
+              echo $(dependencies.iac_validation.iac_outputs.outputs['getKubeConfig.KUBE_CONFIG'])
+            displayName: 'echo variable'
             continueOnError: true
           - bash: aws --version
             displayName: 'aws version'
