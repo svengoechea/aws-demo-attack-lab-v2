@@ -213,7 +213,7 @@ stages:
       condition: always()
       variables:
         - name: kubeConfig
-          value: $(dependencies.iac_validation.IaC_Outputs.outputs['getKubeConfig.kube_config'])
+          value: $[ dependencies.iac_validation.IaC_Outputs.outputs['getKubeConfig.kube_config'] ]
       jobs:
         - job: k8s_app
           displayName: k8s_app
