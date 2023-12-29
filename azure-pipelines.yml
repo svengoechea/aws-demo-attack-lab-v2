@@ -61,7 +61,8 @@ stages:
             inputs:
               provider: 'aws'
               command: 'output'
-              environmentServiceNameAWS: '$(System.DefaultWorkingDirectory)/infra'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+              environmentServiceNameAWS: '$(System.DefaultWorkingDirectory)'
         - job: iac_validation
           dependsOn: check_infra_changes
           condition: eq(dependencies.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
