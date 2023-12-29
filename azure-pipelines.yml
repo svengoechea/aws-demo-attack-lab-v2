@@ -206,5 +206,6 @@ stages:
           steps:
           - bash: kubectl version -o json
             displayName: 'kubectl version'
+            continueOnError: true
           - bash: aws --version
             displayName: 'aws version'
