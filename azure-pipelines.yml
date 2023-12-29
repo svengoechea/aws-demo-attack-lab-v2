@@ -57,7 +57,9 @@ stages:
               backendAWSKey: '$(backendAWSKey)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
           - bash: |
-              echo ##vso[task.setvariable variable=kube_config;isOutput=true]$(terraform -chdir=$(System.DefaultWorkingDirectory)/infra output update_kube_config)
+              echo getKubeConfig="terraform -chdir=$(System.DefaultWorkingDirectory)/infra output update_kube_config"
+              echo $getConfig | bash
+              echo ##vso[task.setvariable variable=kube_config;isOutput=true]echo $getConfig | bash)
             name: getKubeConfig
         - job: iac_validation
           dependsOn: check_infra_changes
