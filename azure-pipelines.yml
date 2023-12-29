@@ -204,7 +204,7 @@ stages:
         - job: k8s_app
           displayName: k8s_app
           steps:
-          - bash: kubectl version
+          - bash: kubectl version -o json
             displayName: 'kubectl version'
           - bash: aws --version
             displayName: 'aws version'
