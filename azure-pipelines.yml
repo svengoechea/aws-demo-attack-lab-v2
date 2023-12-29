@@ -59,6 +59,7 @@ stages:
           - bash: |
               terraform -chdir=$(System.DefaultWorkingDirectory)/infra output -raw update_kube_config
               echo ##vso[task.setvariable variable=KUBE_CONFIG;isOutput=true]$(terraform -chdir=$(System.DefaultWorkingDirectory)/infra output -raw update_kube_config))
+              env
             name: getKubeConfig
         - job: iac_validation
           dependsOn: check_infra_changes
@@ -220,7 +221,7 @@ stages:
           displayName: k8s_app
           steps:
           - script: |
-              echo $kubeConfig
+              env
             displayName: 'kubectl version'
             continueOnError: true
           - bash: aws --version
