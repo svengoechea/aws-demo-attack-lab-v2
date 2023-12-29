@@ -213,18 +213,12 @@ stages:
       condition: always()
       variables:
         - name: kubeConfig
-          value: $(dependencies.iac_validation.iac_outputs.outputs['getKubeConfig.KUBE_CONFIG'])
+          value: $[dependencies.iac_validation.iac_outputs.outputs['getKubeConfig.KUBE_CONFIG']]
       jobs:
         - job: k8s_app
           displayName: k8s_app
           steps:
-          - bash: |
-              echo "You can use macro syntax for variables: $(kubeConfig)"
-            displayName: 'echo variable 1'
-            continueOnError: true
-          - bash: |
-              echo $(dependencies.iac_validation.iac_outputs.outputs['getKubeConfig.KUBE_CONFIG'])
-            displayName: 'echo variable'
+          - bash: echo $(kubeConfig)
             continueOnError: true
           - bash: aws --version
             displayName: 'aws version'
