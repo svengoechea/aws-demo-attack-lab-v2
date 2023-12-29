@@ -13,6 +13,7 @@ variables:
   
 stages:
     - stage: iac_validation
+      condition: always()
       displayName: Validacion de IaC
       jobs:
         - job: check_infra_changes
@@ -114,6 +115,7 @@ stages:
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
               commandOptions: '-refresh=false'
     - stage: docker_build
+      condition: always()
       displayName: Docker Build/Scan
       jobs:
         - job: check_app_changes
