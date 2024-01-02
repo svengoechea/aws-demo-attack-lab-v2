@@ -232,4 +232,7 @@ stages:
               keepToken: true
               tokenPrefix: __
               tokenSuffix: __
-          - bash: cat $(System.DefaultWorkingDirectory)/$(k8sPath)/app.yaml
+          - bash: kubectl apply -f $(System.DefaultWorkingDirectory)/$(k8sPath)/app.yaml
+            displayName: "Deploying Application"
+          - bash: kubectl get svc -A | grep elb | awk '{print $5}' > $(System.DefaultWorkingDirectory)/attack-script/urltoattack.txt"
+            displayName: "Getting URL to Attack"
