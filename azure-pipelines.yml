@@ -221,6 +221,7 @@ stages:
           displayName: k8s_app
           steps:
           - task: AWSCLI@1
+            displayName: awsLogin
             inputs:
               awsCredentials: '$(awsCreds_sc)'
               regionName: '$(awsRegion)'
