@@ -159,7 +159,7 @@ stages:
         - job: docker_build
           dependsOn: check_app_changes
           condition: eq(dependencies.check_app_changes.outputs['check_app_changes.SOURCE_CODE_CHANGED'], 'true')
-          displayName: Docker Build/Push
+          displayName: Docker Build
           steps:
           - task: Docker@2
             displayName: dockerBuild
