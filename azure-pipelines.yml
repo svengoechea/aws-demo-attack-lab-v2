@@ -234,7 +234,7 @@ stages:
           - bash: kubectl apply -f $(System.DefaultWorkingDirectory)/$(k8sPath)/app.yaml
             displayName: "Deploying Application"
           - bash: kubectl get svc -A | grep elb | awk '{print $5}'
-          displayName: URL to Attack
+            displayName: URL to Attack
     - stage: defender_deployment
       displayName: Prisma Defender Deploy
       dependsOn: 
