@@ -134,7 +134,7 @@ stages:
             - checkout: self
               fetchDepth: 2
             - bash: |
-                PATH_FILTER=$(appPath)
+                PATH_FILTER=$(appPath)/
                 CHANGED_FILES=$(git diff HEAD HEAD~ --name-only)
                 MATCH_COUNT=0
 
