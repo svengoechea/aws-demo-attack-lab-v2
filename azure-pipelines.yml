@@ -85,7 +85,7 @@ stages:
               provider: 'aws'
               command: 'plan'
               environmentServiceNameAWS: '$(backendServiceAWS)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/infraPath'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
         - job: security_gate
           dependsOn: iac_validation
           displayName:  Checkov Scanning
