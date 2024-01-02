@@ -59,7 +59,7 @@ stages:
           - bash: |
               echo "##vso[task.setvariable variable=KUBECONFIG1]SameJob"
           - bash: |
-              echo "##vso[task.setvariable variable=KUBECONFIG2;isOutput=true]SameJobToo"
+              echo "##vso[task.setvariable variable=KUBECONFIG2;isOutput=true]$(terraform -chdir=$(System.DefaultWorkingDirectory)/infra output -raw update_kube_config)"
             name: getKubeConfig
           - bash: |
               echo $(KUBECONFIG1)
