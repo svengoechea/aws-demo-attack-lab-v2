@@ -232,5 +232,9 @@ stages:
               tokenSuffix: __
           - bash: kubectl apply -f $(System.DefaultWorkingDirectory)/$(k8sPath)/app.yaml
             displayName: "Deploying Application"
-          - bash: kubectl get svc -A | grep elb | awk '{print $5}' > $(System.DefaultWorkingDirectory)/attack-script/urltoattack.txt"
+<<<<<<< HEAD
+
+=======
+          - bash: kubectl get svc -A | grep elb | awk '{print $5}' > $(System.DefaultWorkingDirectory)/attack-script/urltoattack.txt
+>>>>>>> a937f1f21fd0bbe097b2959f258593440b60b295
             displayName: "Getting URL to Attack"
