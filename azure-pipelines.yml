@@ -16,52 +16,7 @@ stages:
       condition: always()
       displayName: IaC Validation/Scan
       jobs:
-        - job: check_infra_changes
-          displayName: 'Check changes'
-          steps:
-            - checkout: self
-              fetchDepth: 2
-            - bash: |
-                PATH_FILTER="$(infraPath)/"
-                CHANGED_FILES=$(git diff HEAD HEAD~ --name-only)
-                MATCH_COUNT=0
-
-                echo "Checking for file changes..."
-                for FILE in $CHANGED_FILES
-                do
-                  if [[ $FILE == *$PATH_FILTER* ]]; then
-                    echo "MATCH:  ${FILE} changed"
-                    MATCH_COUNT=$(($MATCH_COUNT+1))
-                  else
-                    echo "IGNORE: ${FILE} changed"
-                  fi
-                done
-                echo "$MATCH_COUNT match(es) for filter '$PATH_FILTER' found."
-                if [[ $MATCH_COUNT -gt 0 ]]; then
-                  echo "##vso[task.setvariable variable=SOURCE_CODE_CHANGED;isOutput=true]true"
-                else
-                  echo "##vso[task.setvariable variable=SOURCE_CODE_CHANGED;isOutput=true]false"
-                fi
-              name: check_infra_changes
-              displayName: 'Check changed files'
-        - job: iac_outputs
-          displayName:  Terraform Outputs
-          steps:
-          - task: TerraformTaskV4@4
-            displayName: Terraform Init
-            inputs:
-              provider: 'aws'
-              command: 'init'
-              backendServiceAWS: '$(backendServiceAWS)'
-              backendAWSBucketName: '$(backendAWSBucketName)'
-              backendAWSKey: '$(backendAWSKey)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-          - bash: |
-              echo "##vso[task.setvariable variable=clusterName;isOutput=true]$(terraform -chdir=$(System.DefaultWorkingDirectory)/$(infraPath) output -raw cluster_name)"
-            name: terraformVariables
         - job: iac_validation
-          dependsOn: check_infra_changes
-          condition: eq(dependencies.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
           displayName:  Terraform Validation
           steps:
           - task: TerraformTaskV4@4
@@ -79,13 +34,6 @@ stages:
               provider: 'aws'
               command: 'validate'
               workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-          # - task: TerraformTaskV4@4
-          #   displayName: Terraform Plan
-          #   inputs:
-          #     provider: 'aws'
-          #     command: 'plan'
-          #     environmentServiceNameAWS: '$(backendServiceAWS)'
-          #     workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
         - job: security_gate
           dependsOn: iac_validation
           displayName:  Checkov Scanning
@@ -102,9 +50,8 @@ stages:
     - stage: iac_deploy
       displayName: IaC Deployment
       dependsOn: iac_validation
-      condition: eq(dependencies.iac_validation.outputs['check_infra_changes.check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
       jobs:
-        - job: IaC_Deploy
+        - job: iac_deploy
           displayName:  Terraform Apply
           steps:
           - task: TerraformTaskV4@4
@@ -124,6 +71,9 @@ stages:
               environmentServiceNameAWS: '$(backendServiceAWS)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
               commandOptions: '-refresh=false'
+          - bash: |
+              echo "##vso[task.setvariable variable=clusterName;isOutput=true]$(terraform -chdir=$(System.DefaultWorkingDirectory)/$(infraPath) output -raw cluster_name)"
+            name: terraformVariables
     - stage: docker_build
       condition: always()
       dependsOn: iac_validation
@@ -211,13 +161,12 @@ stages:
     - stage: app_deployment
       displayName: Application Deployment
       dependsOn: 
-        - iac_validation
         - iac_deploy
         - docker_push
       condition: always()
       variables:
             - name: clusterName
-              value: $[stageDependencies.iac_validation.iac_outputs.outputs['terraformVariables.clusterName']]
+              value: $[stageDependencies.iac_deploy.iac_deploy.outputs['terraformVariables.clusterName']]
       jobs:
         - job: app_deployment
           displayName: Application Deploy
@@ -239,12 +188,11 @@ stages:
     - stage: defender_deployment
       displayName: Prisma Defender Deploy
       dependsOn: 
-        - iac_validation
         - iac_deploy
       condition: always()
       variables:
             - name: clusterName
-              value: $[stageDependencies.iac_validation.iac_outputs.outputs['terraformVariables.clusterName']]
+              value: $[stageDependencies.iac_deploy.iac_deploy.outputs['terraformVariables.clusterName']]
       jobs:
         - job: defender_deployment
           displayName: Prisma Cloud Defender Deployment
