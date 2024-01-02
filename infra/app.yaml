@@ -1,0 +1,42 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: springapp
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: springapp
+  namespace: springapp
+spec:
+  selector:
+    matchLabels:
+      name: springapp
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: springapp
+    spec:
+      containers:
+      - name: springapp
+        image: __imageName__/__(Build.BuildNumber__
+        ports:
+        - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: springapp
+  name: springapp
+  labels:
+    name: springapp
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    name: springapp
