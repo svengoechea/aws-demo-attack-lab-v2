@@ -159,7 +159,9 @@ stages:
               artifact: $(imageName):$(imageTag)
     - stage: docker_push
       displayName: Docker Push
-      dependsOn: docker_build
+      dependsOn: 
+        - docker_build
+        - docker_image_scan
       condition:  eq(dependencies.docker_build.outputs['check_app_changes.check_app_changes.SOURCE_CODE_CHANGED'], 'true')
       jobs:
         - job: docker_push
