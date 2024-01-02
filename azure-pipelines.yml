@@ -218,6 +218,7 @@ stages:
               value: $[stageDependencies.iac_validation.iac_outputs.outputs['terraformVariables.clusterName']]
           displayName: k8s_app
           steps:
-          - bash: env
           - bash: aws eks update-kubeconfig --name $(clusterName)
-          - bash: kubectl get node
+            displayName: "Update Kube Config"
+          - bash: kubectl apply -f $(System.DefaultWorkingDirectory)/$(infraPath)/daemonset.yaml
+            displayName: "Deploying Prisma Cloud Defender"
