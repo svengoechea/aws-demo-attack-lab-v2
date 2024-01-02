@@ -56,8 +56,15 @@ stages:
               backendAWSBucketName: '$(backendAWSBucketName)'
               backendAWSKey: '$(backendAWSKey)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-          - bash: echo "##vso[task.setvariable variable=KUBECONFIG;isOutput=true]thisExample"
+          - bash: |
+              echo "##vso[task.setvariable variable=KUBECONFIG1]SameJob"
+          - bash: |
+              echo "##vso[task.setvariable variable=KUBECONFIG2;isOutput=true]SameJobToo"
             name: getKubeConfig
+          - bash: |
+              echo $(KUBECONFIG1)
+          - bash: |
+              echo $(getKubeConfig.KUBECONFIG2)
         - job: iac_validation
           dependsOn: check_infra_changes
           condition: eq(dependencies.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
@@ -98,126 +105,126 @@ stages:
           - script: |
               checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules
             displayName: Escaneo con Checkov
-    - stage: iac_deploy
-      displayName: IaC Deployment
-      condition: eq(dependencies.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
-      jobs:
-        - job: IaC_Deploy
-          displayName:  Terraform Apply
-          steps:
-          - task: TerraformTaskV4@4
-            displayName: Terraform Init
-            inputs:
-              provider: 'aws'
-              command: 'init'
-              backendServiceAWS: '$(backendServiceAWS)'
-              backendAWSBucketName: '$(backendAWSBucketName)'
-              backendAWSKey: '$(backendAWSKey)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-          - task: TerraformTaskV4@4
-            displayName: Terraform Apply
-            inputs:
-              provider: 'aws'
-              command: 'apply'
-              environmentServiceNameAWS: '$(backendServiceAWS)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-              commandOptions: '-refresh=false'
-          - bash: |
-              echo ##vso[task.setvariable variable=kube_config]$(terraform -chdir=$(System.DefaultWorkingDirectory)/infra output update_kube_config)
-    - stage: docker_build
-      condition: always()
-      displayName: Docker Build/Scan
-      jobs:
-        - job: check_app_changes
-          displayName: 'Check changes'
-          steps:
-            - checkout: self
-              fetchDepth: 2
-            - bash: |
-                PATH_FILTER="app/"
-                CHANGED_FILES=$(git diff HEAD HEAD~ --name-only)
-                MATCH_COUNT=0
+    # - stage: iac_deploy
+    #   displayName: IaC Deployment
+    #   condition: eq(dependencies.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
+    #   jobs:
+    #     - job: IaC_Deploy
+    #       displayName:  Terraform Apply
+    #       steps:
+    #       - task: TerraformTaskV4@4
+    #         displayName: Terraform Init
+    #         inputs:
+    #           provider: 'aws'
+    #           command: 'init'
+    #           backendServiceAWS: '$(backendServiceAWS)'
+    #           backendAWSBucketName: '$(backendAWSBucketName)'
+    #           backendAWSKey: '$(backendAWSKey)'
+    #           workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+    #       - task: TerraformTaskV4@4
+    #         displayName: Terraform Apply
+    #         inputs:
+    #           provider: 'aws'
+    #           command: 'apply'
+    #           environmentServiceNameAWS: '$(backendServiceAWS)'
+    #           workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+    #           commandOptions: '-refresh=false'
+    #       - bash: |
+    #           echo ##vso[task.setvariable variable=kube_config]$(terraform -chdir=$(System.DefaultWorkingDirectory)/infra output update_kube_config)
+    # - stage: docker_build
+    #   condition: always()
+    #   displayName: Docker Build/Scan
+    #   jobs:
+    #     - job: check_app_changes
+    #       displayName: 'Check changes'
+    #       steps:
+    #         - checkout: self
+    #           fetchDepth: 2
+    #         - bash: |
+    #             PATH_FILTER="app/"
+    #             CHANGED_FILES=$(git diff HEAD HEAD~ --name-only)
+    #             MATCH_COUNT=0
 
-                echo "Checking for file changes..."
-                for FILE in $CHANGED_FILES
-                do
-                  if [[ $FILE == *$PATH_FILTER* ]]; then
-                    echo "MATCH:  ${FILE} changed"
-                    MATCH_COUNT=$(($MATCH_COUNT+1))
-                  else
-                    echo "IGNORE: ${FILE} changed"
-                  fi
-                done
-                echo "$MATCH_COUNT match(es) for filter '$PATH_FILTER' found."
-                if [[ $MATCH_COUNT -gt 0 ]]; then
-                  echo "##vso[task.setvariable variable=SOURCE_CODE_CHANGED;isOutput=true]true"
-                else
-                  echo "##vso[task.setvariable variable=SOURCE_CODE_CHANGED;isOutput=true]false"
-                fi
-              name: check_app_changes
-              displayName: 'Check changed files'
-        - job: docker_build
-          dependsOn: check_app_changes
-          condition: eq(dependencies.check_app_changes.outputs['check_app_changes.SOURCE_CODE_CHANGED'], 'true')
-          displayName: Docker Build/Push
-          steps:
-          - task: Docker@2
-            displayName: dockerBuild
-            inputs:
-              containerRegistry: 29c5a2ee-3cf2-453f-bc6c-af40c852272e
-              repository: $(imageName)
-              command: build
-              Dockerfile: '$(dockerfilePath)/Dockerfile'
-              tags: $(Build.BuildNumber)
-          - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
-            displayName: prismaCloudScan
-            inputs:
-              twistlockService: 8f6f8a0a-315c-40b0-a688-d1773f36ed7b
-              artifact: $(imageName):$(Build.BuildNumber)
-          - task: Bash@3
-            displayName: Save Docker Image
-            inputs:
-              targetType: 'inline'
-              script: docker save -o $(Pipeline.Workspace)/image.tar $(imageName):$(Build.BuildNumber)
-          - task: PublishPipelineArtifact@1
-            inputs:
-              targetPath: '$(Pipeline.Workspace)/image.tar'
-              artifact: 'myArtifact'
-              publishLocation: 'pipeline'
-    - stage: docker_push
-      displayName: Docker Push
-      dependsOn: docker_build
-      condition: eq(dependencies.check_app_changes.outputs['check_app_changes.SOURCE_CODE_CHANGED'], 'true')
-      jobs:
-        - job: docker_push
-          displayName: Docker Push
-          steps:
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              buildType: 'current'
-              artifactName: 'myArtifact'
-              targetPath: '$(Pipeline.Workspace)'
-          - bash: |
-              docker load --input '$(Pipeline.Workspace)/image.tar'
-            displayName: 'dockerLoadImage'
-          - task: Docker@2
-            displayName: dockerPush
-            inputs:
-              containerRegistry: 29c5a2ee-3cf2-453f-bc6c-af40c852272e
-              repository: $(imageName)
-              command: push
-              tags: $(Build.BuildNumber)
-    - stage: k8s_app
-      displayName: K8s App
-      condition: always()
-      jobs:
-        - job: k8s_app
-          variables:
-            - name: kubeConfig
-              value: $[stageDependencies.iac_validation.iac_outputs.outputs['getKubeConfig.KUBECONFIG']]
-          displayName: k8s_app
-          steps:
-          - bash: env
-            continueOnError: true
-          - bash: echo $(kubeConfig)
-            continueOnError: true
+    #             echo "Checking for file changes..."
+    #             for FILE in $CHANGED_FILES
+    #             do
+    #               if [[ $FILE == *$PATH_FILTER* ]]; then
+    #                 echo "MATCH:  ${FILE} changed"
+    #                 MATCH_COUNT=$(($MATCH_COUNT+1))
+    #               else
+    #                 echo "IGNORE: ${FILE} changed"
+    #               fi
+    #             done
+    #             echo "$MATCH_COUNT match(es) for filter '$PATH_FILTER' found."
+    #             if [[ $MATCH_COUNT -gt 0 ]]; then
+    #               echo "##vso[task.setvariable variable=SOURCE_CODE_CHANGED;isOutput=true]true"
+    #             else
+    #               echo "##vso[task.setvariable variable=SOURCE_CODE_CHANGED;isOutput=true]false"
+    #             fi
+    #           name: check_app_changes
+    #           displayName: 'Check changed files'
+    #     - job: docker_build
+    #       dependsOn: check_app_changes
+    #       condition: eq(dependencies.check_app_changes.outputs['check_app_changes.SOURCE_CODE_CHANGED'], 'true')
+    #       displayName: Docker Build/Push
+    #       steps:
+    #       - task: Docker@2
+    #         displayName: dockerBuild
+    #         inputs:
+    #           containerRegistry: 29c5a2ee-3cf2-453f-bc6c-af40c852272e
+    #           repository: $(imageName)
+    #           command: build
+    #           Dockerfile: '$(dockerfilePath)/Dockerfile'
+    #           tags: $(Build.BuildNumber)
+    #       - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
+    #         displayName: prismaCloudScan
+    #         inputs:
+    #           twistlockService: 8f6f8a0a-315c-40b0-a688-d1773f36ed7b
+    #           artifact: $(imageName):$(Build.BuildNumber)
+    #       - task: Bash@3
+    #         displayName: Save Docker Image
+    #         inputs:
+    #           targetType: 'inline'
+    #           script: docker save -o $(Pipeline.Workspace)/image.tar $(imageName):$(Build.BuildNumber)
+    #       - task: PublishPipelineArtifact@1
+    #         inputs:
+    #           targetPath: '$(Pipeline.Workspace)/image.tar'
+    #           artifact: 'myArtifact'
+    #           publishLocation: 'pipeline'
+    # - stage: docker_push
+    #   displayName: Docker Push
+    #   dependsOn: docker_build
+    #   condition: eq(dependencies.check_app_changes.outputs['check_app_changes.SOURCE_CODE_CHANGED'], 'true')
+    #   jobs:
+    #     - job: docker_push
+    #       displayName: Docker Push
+    #       steps:
+    #       - task: DownloadPipelineArtifact@2
+    #         inputs:
+    #           buildType: 'current'
+    #           artifactName: 'myArtifact'
+    #           targetPath: '$(Pipeline.Workspace)'
+    #       - bash: |
+    #           docker load --input '$(Pipeline.Workspace)/image.tar'
+    #         displayName: 'dockerLoadImage'
+    #       - task: Docker@2
+    #         displayName: dockerPush
+    #         inputs:
+    #           containerRegistry: 29c5a2ee-3cf2-453f-bc6c-af40c852272e
+    #           repository: $(imageName)
+    #           command: push
+    #           tags: $(Build.BuildNumber)
+    # - stage: k8s_app
+    #   displayName: K8s App
+    #   condition: always()
+    #   jobs:
+    #     - job: k8s_app
+    #       variables:
+    #         - name: kubeConfig
+    #           value: $[stageDependencies.iac_validation.iac_outputs.outputs['getKubeConfig.KUBECONFIG']]
+    #       displayName: k8s_app
+    #       steps:
+    #       - bash: env
+    #         continueOnError: true
+    #       - bash: echo $(kubeConfig)
+    #         continueOnError: true
