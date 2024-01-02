@@ -57,9 +57,11 @@ stages:
               backendAWSKey: '$(backendAWSKey)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
           - bash: |
+              terraform -chdir=$(System.DefaultWorkingDirectory)/$(infraPath) output -raw cluster_name
               echo "##vso[task.setvariable variable=clusterName;isOutput=true]$(terraform -chdir=$(System.DefaultWorkingDirectory)/$(infraPath) output -raw cluster_name)"
             name: terraformVariables
         - job: testingVariables
+          dependsOn: iac_outputs
           variables:
             varA: $[ dependencies.iac_outputs.outputs['terraformVariables.clusterName'] ]
           steps:
