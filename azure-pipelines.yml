@@ -211,6 +211,7 @@ stages:
     - stage: app_deployment
       displayName: Application Deployment
       dependsOn: 
+        - iac_validation
         - iac_deploy
         - docker_push
       condition: always()
@@ -238,6 +239,7 @@ stages:
     - stage: defender_deployment
       displayName: Prisma Defender Deploy
       dependsOn: 
+        - iac_validation
         - iac_deploy
       condition: always()
       variables:
