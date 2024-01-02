@@ -101,6 +101,7 @@ stages:
             displayName: Escaneo con Checkov
     - stage: iac_deploy
       displayName: IaC Deployment
+      dependsOn: iac_validation
       condition: eq(dependencies.iac_validation.outputs['check_infra_changes.check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
       jobs:
         - job: IaC_Deploy
@@ -218,7 +219,7 @@ stages:
               value: $[stageDependencies.iac_validation.iac_outputs.outputs['terraformVariables.clusterName']]
       jobs:
         - job: app_deployment
-          displayName: Application Deployment
+          displayName: Application Deploy
           steps:
           - bash: aws eks update-kubeconfig --name $(clusterName)
             displayName: "Update Kube Config"
@@ -242,8 +243,9 @@ stages:
               then
                 kubectl apply -f $(System.DefaultWorkingDirectory)/$(k8sPath)/daemonset.yaml
               else
-                echo "Prisma Cloud Namespace already exists"
+                echo "Prisma Cloud Namespace already exists, not deploying again!"
               fi
             displayName: "Deploying Prisma Cloud Defender"
             
           - bash: kubectl get svc -A | grep elb | awk '{print $5}'
+            displayName: URL to Attack
