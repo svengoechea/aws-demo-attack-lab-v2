@@ -22,7 +22,7 @@ stages:
             - checkout: self
               fetchDepth: 2
             - bash: |
-                PATH_FILTER="infra/"
+                PATH_FILTER="$(infraPath)/"
                 CHANGED_FILES=$(git diff HEAD HEAD~ --name-only)
                 MATCH_COUNT=0
 
@@ -55,9 +55,9 @@ stages:
               backendServiceAWS: '$(backendServiceAWS)'
               backendAWSBucketName: '$(backendAWSBucketName)'
               backendAWSKey: '$(backendAWSKey)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
           - bash: |
-              echo "##vso[task.setvariable variable=clusterName;isOutput=true]$(terraform -chdir=$(System.DefaultWorkingDirectory)/infra output -raw cluster_name)"
+              echo "##vso[task.setvariable variable=clusterName;isOutput=true]$(terraform -chdir=$(System.DefaultWorkingDirectory)/$(infraPath) output -raw cluster_name)"
             name: terraformVariables
         - job: iac_validation
           dependsOn: check_infra_changes
@@ -72,20 +72,20 @@ stages:
               backendServiceAWS: '$(backendServiceAWS)'
               backendAWSBucketName: '$(backendAWSBucketName)'
               backendAWSKey: '$(backendAWSKey)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
           - task: TerraformTaskV4@4
             displayName: Terraform Validate
             inputs:
               provider: 'aws'
               command: 'validate'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
           - task: TerraformTaskV4@4
             displayName: Terraform Plan
             inputs:
               provider: 'aws'
               command: 'plan'
               environmentServiceNameAWS: '$(backendServiceAWS)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/infraPath'
         - job: security_gate
           dependsOn: iac_validation
           displayName:  Checkov Scanning
@@ -114,17 +114,15 @@ stages:
               backendServiceAWS: '$(backendServiceAWS)'
               backendAWSBucketName: '$(backendAWSBucketName)'
               backendAWSKey: '$(backendAWSKey)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
           - task: TerraformTaskV4@4
             displayName: Terraform Apply
             inputs:
               provider: 'aws'
               command: 'apply'
               environmentServiceNameAWS: '$(backendServiceAWS)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
               commandOptions: '-refresh=false'
-          - bash: |
-              echo ##vso[task.setvariable variable=kube_config]$(terraform -chdir=$(System.DefaultWorkingDirectory)/infra output update_kube_config)
     - stage: docker_build
       condition: always()
       dependsOn: iac_validation
@@ -136,7 +134,7 @@ stages:
             - checkout: self
               fetchDepth: 2
             - bash: |
-                PATH_FILTER="app/"
+                PATH_FILTER=$(appPath)
                 CHANGED_FILES=$(git diff HEAD HEAD~ --name-only)
                 MATCH_COUNT=0
 
@@ -169,7 +167,7 @@ stages:
               containerRegistry: 29c5a2ee-3cf2-453f-bc6c-af40c852272e
               repository: $(imageName)
               command: build
-              Dockerfile: '$(dockerfilePath)/Dockerfile'
+              Dockerfile: '$(appPath)/Dockerfile'
               tags: $(Build.BuildNumber)
           - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
             displayName: prismaCloudScan
@@ -220,5 +218,6 @@ stages:
               value: $[stageDependencies.iac_validation.iac_outputs.outputs['terraformVariables.clusterName']]
           displayName: k8s_app
           steps:
+          - bash: env
           - bash: aws eks update-kubeconfig --name $(clusterName)
           - bash: kubectl get node
