@@ -14,7 +14,7 @@ variables:
 stages:
     - stage: iac_validation
       condition: always()
-      displayName: IaC Validation
+      displayName: IaC Validate
       jobs:
         - job: iac_validation
           displayName:  IaC Validation
@@ -36,7 +36,7 @@ stages:
               workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
     - stage: iac_scan
       condition: always()
-      displayName: IaC Scan (Prisma Cloud)
+      displayName: IaC Scan (Prisma)
       dependsOn: iac_validation
       jobs:
         - job: security_gate
@@ -148,7 +148,7 @@ stages:
               artifact: 'myArtifact'
               publishLocation: 'pipeline'
     - stage: docker_image_scan
-      displayName: Docker Image Scan (Prisma Cloud)
+      displayName: Image Scan (Prisma)
       dependsOn: docker_build
       condition:  eq(dependencies.docker_build.outputs['check_app_changes.check_app_changes.SOURCE_CODE_CHANGED'], 'true')
       jobs:
@@ -221,7 +221,7 @@ stages:
           - bash: kubectl get svc -A | grep elb | awk '{print $5}'
             displayName: URL to Attack
     - stage: defender_deployment
-      displayName: Defender Deploy (Prisma Cloud)
+      displayName: Apply Defender (Prisma)
       dependsOn: 
         - iac_deploy
       condition: always()
