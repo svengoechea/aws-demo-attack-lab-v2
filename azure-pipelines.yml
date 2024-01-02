@@ -14,7 +14,7 @@ variables:
 stages:
     - stage: iac_validation
       condition: always()
-      displayName: IaC Validation/Scan
+      displayName: IaC Validation
       jobs:
         - job: iac_validation
           displayName:  IaC Validation
@@ -34,9 +34,9 @@ stages:
               provider: 'aws'
               command: 'validate'
               workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-    - stage: security_gate
+    - stage: iac_scan
       condition: always()
-      displayName: IaC Scan
+      displayName: IaC Scan (Prisma Cloud)
       dependsOn: iac_validation
       jobs:
         - job: security_gate
@@ -49,13 +49,22 @@ stages:
           - script: pip install checkov
             displayName: Instalacion Checkov
           - script: |
-              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules
-            displayName: Escaneo con Checkov
+              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet --framework terraform,json
+            displayName: Escaneo IaC
+          - script: |
+              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet --framework sca_package,sca_image,dockerfile
+            displayName: Escaneo SCA
+          - script: |
+              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet --framework secrets
+            displayName: Escaneo Secrets
+          - script: |
+              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet --framework kubernetes
+            displayName: Escaneo Kubernetes
     - stage: iac_deploy
       displayName: IaC Deploy
       dependsOn: 
         - iac_validation
-        - security_gate
+        - iac_scan
       jobs:
         - job: iac_deploy
           displayName:  Terraform Apply
@@ -82,8 +91,10 @@ stages:
             name: terraformVariables
     - stage: docker_build
       condition: always()
-      dependsOn: iac_validation
-      displayName: Docker Build/Scan
+      dependsOn: 
+        - iac_validation
+        - iac_scan
+      displayName: Docker Build
       jobs:
         - job: check_app_changes
           displayName: 'Check changes'
@@ -137,7 +148,7 @@ stages:
               artifact: 'myArtifact'
               publishLocation: 'pipeline'
     - stage: docker_image_scan
-      displayName: Docker Image Scan
+      displayName: Docker Image Scan (Prisma Cloud)
       dependsOn: docker_build
       condition:  eq(dependencies.docker_build.outputs['check_app_changes.check_app_changes.SOURCE_CODE_CHANGED'], 'true')
       jobs:
@@ -183,7 +194,7 @@ stages:
               command: push
               tags: $(imageTag)
     - stage: app_deployment
-      displayName: Application Deployment
+      displayName: Application Deploy
       dependsOn: 
         - iac_deploy
         - docker_push
@@ -210,7 +221,7 @@ stages:
           - bash: kubectl get svc -A | grep elb | awk '{print $5}'
             displayName: URL to Attack
     - stage: defender_deployment
-      displayName: Prisma Defender Deploy
+      displayName: Defender Deploy (Prisma Cloud)
       dependsOn: 
         - iac_deploy
       condition: always()
