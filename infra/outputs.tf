@@ -4,6 +4,11 @@ output "cluster_name" {
   value       = module.eks.cluster_name
 }
 
+output "region" {
+  description = "AWS Region"
+  value       = var.region
+}
+
 output "cluster_endpoint" {
   description = "Endpoint for Amazon Web Service EKS "
   value       = module.eks.cluster_endpoint
