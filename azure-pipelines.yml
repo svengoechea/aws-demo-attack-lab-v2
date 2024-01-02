@@ -220,14 +220,14 @@ stages:
           steps:
           - bash: aws eks update-kubeconfig --name $(clusterName)
             displayName: "Update Kube Config"
-          - bash: kubectl apply -f $(System.DefaultWorkingDirectory)/$(infraPath)/daemonset.yaml
+          - bash: kubectl apply -f $(System.DefaultWorkingDirectory)/$(k8sPath)/daemonset.yaml
             displayName: "Deploying Prisma Cloud Defender"
           - task: qetza.replacetokens.replacetokens-task.replacetokens@3
             displayName: Replace tokens in **/*
             inputs:
               rootDirectory: $(System.DefaultWorkingDirectory)
-              targetFiles: '**/app.yaml'
+              targetFiles: '$(k8sPath)/app.yaml'
               keepToken: true
               tokenPrefix: __
               tokenSuffix: __
-          - bash: cat $(System.DefaultWorkingDirectory)/$(infraPath)/app.yaml
+          - bash: cat $(System.DefaultWorkingDirectory)/$(k8sPath)/app.yaml
