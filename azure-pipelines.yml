@@ -17,7 +17,7 @@ stages:
       displayName: IaC Validation/Scan
       jobs:
         - job: iac_validation
-          displayName:  Terraform Validation
+          displayName:  IaC Validation
           steps:
           - task: TerraformTaskV4@4
             displayName: Terraform Init
@@ -34,8 +34,12 @@ stages:
               provider: 'aws'
               command: 'validate'
               workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
+    - stage: security_gate
+      condition: always()
+      displayName: IaC Scan
+      dependsOn: iac_validation
+      jobs:
         - job: security_gate
-          dependsOn: iac_validation
           displayName:  Checkov Scanning
           steps:
           - task: UsePythonVersion@0
@@ -48,8 +52,10 @@ stages:
               checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules
             displayName: Escaneo con Checkov
     - stage: iac_deploy
-      displayName: IaC Deployment
-      dependsOn: iac_validation
+      displayName: IaC Deploy
+      dependsOn: 
+        - iac_validation
+        - security_gate
       jobs:
         - job: iac_deploy
           displayName:  Terraform Apply
@@ -120,11 +126,6 @@ stages:
               command: build
               Dockerfile: '$(appPath)/Dockerfile'
               tags: $(imageTag)
-          - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
-            displayName: prismaCloudScan
-            inputs:
-              twistlockService: 8f6f8a0a-315c-40b0-a688-d1773f36ed7b
-              artifact: $(imageName):$(imageTag)
           - task: Bash@3
             displayName: Save Docker Image
             inputs:
@@ -135,6 +136,27 @@ stages:
               targetPath: '$(Pipeline.Workspace)/image.tar'
               artifact: 'myArtifact'
               publishLocation: 'pipeline'
+    - stage: docker_image_scan
+      displayName: Docker Image Scan
+      dependsOn: docker_build
+      condition:  eq(dependencies.docker_build.outputs['check_app_changes.check_app_changes.SOURCE_CODE_CHANGED'], 'true')
+      jobs:
+        - job: Scan
+          displayName: Docker Push
+          steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              artifactName: 'myArtifact'
+              targetPath: '$(Pipeline.Workspace)'
+          - bash: |
+              docker load --input '$(Pipeline.Workspace)/image.tar'
+            displayName: 'dockerLoadImage'
+          - task: PrismaCloud.build-release-task.custom-build-release-task.prisma-cloud-compute-scan@3
+            displayName: prismaCloudScan
+            inputs:
+              twistlockService: 8f6f8a0a-315c-40b0-a688-d1773f36ed7b
+              artifact: $(imageName):$(imageTag)
     - stage: docker_push
       displayName: Docker Push
       dependsOn: docker_build
