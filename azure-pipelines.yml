@@ -56,7 +56,7 @@ stages:
               backendAWSBucketName: '$(backendAWSBucketName)'
               backendAWSKey: '$(backendAWSKey)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/infra'
-          - bash: echo "##vso[task.setvariable variable=KUBE_CONFIG;isOutput=true]thisExample"
+          - bash: echo "##vso[task.setvariable variable=KUBECONFIG;isOutput=true]thisExample"
             name: getKubeConfig
         - job: iac_validation
           dependsOn: check_infra_changes
@@ -214,8 +214,10 @@ stages:
         - job: k8s_app
           variables:
             - name: kubeConfig
-              value: $[ stageDependencies.iac_validation.iac_outputs.outputs['getKubeConfig.KUBE_CONFIG'] ]
+              value: $[stageDependencies.iac_validation.iac_outputs.outputs['getKubeConfig.KUBECONFIG']]
           displayName: k8s_app
           steps:
+          - bash: env
+            continueOnError: true
           - bash: echo $(kubeConfig)
             continueOnError: true
