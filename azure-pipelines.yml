@@ -220,13 +220,5 @@ stages:
               value: $[stageDependencies.iac_validation.iac_outputs.outputs['terraformVariables.clusterName']]
           displayName: k8s_app
           steps:
-          - task: AWSCLI@1
-            displayName: awsLogin
-            inputs:
-              awsCredentials: '$(awsCreds_sc)'
-              regionName: '$(awsRegion)'
-              awsCommand: 'eks'
-              awsSubCommand: 'update-kubeconfig'
-              awsArguments: '--name $(clusterName)'
-          - bash: |
-              kubectl get nodes
+          - bash: aws eks update-kubeconfig --name $(clusterName)
+          - bash: kubectl get node
