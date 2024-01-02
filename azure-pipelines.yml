@@ -101,7 +101,7 @@ stages:
             displayName: Escaneo con Checkov
     - stage: iac_deploy
       displayName: IaC Deployment
-      condition: eq(stageDependencies.iac_validation.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
+      condition: eq(dependencies.iac_validation.outputs['check_infra_changes.check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
       jobs:
         - job: IaC_Deploy
           displayName:  Terraform Apply
