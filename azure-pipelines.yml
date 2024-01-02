@@ -62,7 +62,7 @@ stages:
         - job: iac_validation
           dependsOn: check_infra_changes
           condition: eq(dependencies.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
-          displayName:  Terraform Plan
+          displayName:  Terraform Validation
           steps:
           - task: TerraformTaskV4@4
             displayName: Terraform Init
@@ -79,13 +79,13 @@ stages:
               provider: 'aws'
               command: 'validate'
               workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-          - task: TerraformTaskV4@4
-            displayName: Terraform Plan
-            inputs:
-              provider: 'aws'
-              command: 'plan'
-              environmentServiceNameAWS: '$(backendServiceAWS)'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
+          # - task: TerraformTaskV4@4
+          #   displayName: Terraform Plan
+          #   inputs:
+          #     provider: 'aws'
+          #     command: 'plan'
+          #     environmentServiceNameAWS: '$(backendServiceAWS)'
+          #     workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
         - job: security_gate
           dependsOn: iac_validation
           displayName:  Checkov Scanning
@@ -187,7 +187,7 @@ stages:
     - stage: docker_push
       displayName: Docker Push
       dependsOn: docker_build
-      condition: eq(stageDependencies.docker_build.check_app_changes.outputs['check_app_changes.SOURCE_CODE_CHANGED'], 'true')
+      condition:  eq(dependencies.docker_build.outputs['check_app_changes.check_app_changes.SOURCE_CODE_CHANGED'], 'true')
       jobs:
         - job: docker_push
           displayName: Docker Push
