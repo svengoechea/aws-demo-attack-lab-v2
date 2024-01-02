@@ -101,7 +101,7 @@ stages:
             displayName: Escaneo con Checkov
     - stage: iac_deploy
       displayName: IaC Deployment
-      condition: eq(dependencies.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
+      condition: eq(stageDependencies.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
       jobs:
         - job: IaC_Deploy
           displayName:  Terraform Apply
@@ -227,3 +227,5 @@ stages:
               awsCommand: 'eks'
               awsSubCommand: 'update-kubeconfig'
               awsArguments: '--name $(clusterName)'
+          - bash: |
+              kubectl get nodes
