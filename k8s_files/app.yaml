@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: springapp
-        image: __imageName__/__(Build.BuildNumber__
+        image: __imageName__/__Build.BuildNumber__
         ports:
         - containerPort: 8080
 

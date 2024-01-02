@@ -101,7 +101,7 @@ stages:
             displayName: Escaneo con Checkov
     - stage: iac_deploy
       displayName: IaC Deployment
-      condition: eq(stageDependencies.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
+      condition: eq(stageDependencies.iac_validation.check_infra_changes.outputs['check_infra_changes.SOURCE_CODE_CHANGED'], 'true')
       jobs:
         - job: IaC_Deploy
           displayName:  Terraform Apply
@@ -209,7 +209,7 @@ stages:
               tags: $(Build.BuildNumber)
     - stage: k8s_app
       displayName: K8s App
-      dependsOn: iac_validation
+      dependsOn: docker_push
       condition: always()
       jobs:
         - job: k8s_app
