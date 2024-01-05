@@ -27,7 +27,7 @@ module "eks" {
     one = {
       name = "${var.deployment_name}-ng1"
 
-      instance_types = ["t3.small"]
+      instance_types = ["t3.medium"]
 
       min_size     = 1
       max_size     = 4
@@ -36,7 +36,7 @@ module "eks" {
     two = {
       name = "${var.deployment_name}-ng2"
 
-      instance_types = ["t3.small"]
+      instance_types = ["t3.medium"]
 
       min_size     = 0
       max_size     = 2
