@@ -29,9 +29,9 @@ module "eks" {
 
       instance_types = ["t3.medium"]
 
-      min_size     = 0
+      min_size     = 1
       max_size     = 4
-      desired_size = 0
+      desired_size = 2
     }
     two = {
       name = "${var.deployment_name}-ng2"
