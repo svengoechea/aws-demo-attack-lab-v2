@@ -82,6 +82,19 @@ stages:
           - task: SonarQubePublish@5
             inputs:
               pollingTimeoutSec: '120'
+          - task: SonarQubePrepare@5
+            inputs:
+              SonarQube: 'davids-sonarqube'
+              scannerMode: 'CLI'
+              configMode: 'manual'
+              cliSources: '.'
+              extraProperties: |
+                sonar.exclusions=$(appPath)
+          - task: SonarQubeAnalyze@5
+          - task: SonarQubePublish@5
+          inputs:
+            pollingTimeoutSec: '120'
+            
     # - stage: iac_deploy
     #   displayName: IaC Deploy
     #   dependsOn: 
