@@ -57,9 +57,7 @@ stages:
           - task: SonarQubePrepare@5
             inputs:
               SonarQube: 'davids-sonarqube'
-              scannerMode: 'CLI'
-              configMode: 'manual'
-              cliSources: '.'
+              scannerMode: 'Other'
               extraProperties: |
                 sonar.projectKey=davidaavilar_aws-demo-attack-lab-v2_AYzvx1XmWekUu8ehLgw9
                 sonar.projectName=aws-demo-attack-lab-v2
