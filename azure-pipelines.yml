@@ -12,28 +12,28 @@ variables:
   - group: aws-demo-attack-lab-v2
   
 stages:
-    - stage: iac_validation
-      condition: always()
-      displayName: IaC Validate
-      jobs:
-        # - job: iac_validation
-        #   displayName:  IaC Validation
-        #   steps:
-        #   - task: TerraformTaskV4@4
-        #     displayName: Terraform Init
-        #     inputs:
-        #       provider: 'aws'
-        #       command: 'init'
-        #       backendServiceAWS: '$(backendServiceAWS)'
-        #       backendAWSBucketName: '$(backendAWSBucketName)'
-        #       backendAWSKey: '$(backendAWSKey)'
-        #       workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-        #   - task: TerraformTaskV4@4
-        #     displayName: Terraform Validate
-        #     inputs:
-        #       provider: 'aws'
-        #       command: 'validate'
-        #       workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
+    # - stage: iac_validation
+    #   condition: always()
+    #   displayName: IaC Validate
+    #   jobs:
+    #     - job: iac_validation
+    #       displayName:  IaC Validation
+    #       steps:
+    #       - task: TerraformTaskV4@4
+    #         displayName: Terraform Init
+    #         inputs:
+    #           provider: 'aws'
+    #           command: 'init'
+    #           backendServiceAWS: '$(backendServiceAWS)'
+    #           backendAWSBucketName: '$(backendAWSBucketName)'
+    #           backendAWSKey: '$(backendAWSKey)'
+    #           workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
+    #       - task: TerraformTaskV4@4
+    #         displayName: Terraform Validate
+    #         inputs:
+    #           provider: 'aws'
+    #           command: 'validate'
+    #           workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
     - stage: iac_scan
       condition: always()
       displayName: IaC Scan (Prisma)
