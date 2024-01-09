@@ -58,8 +58,9 @@ stages:
             inputs:
               SonarQube: 'davids-sonarqube'
               scannerMode: 'CLI'
-              configMode: 'file'
-              extraProperties: 'sonar.projectKey=aws-demo-attack-lab-v2'
+              configMode: 'manual'
+              cliProjectKey: 'aws-demo-attack-lab-v2'
+              extraProperties: 'sonar.branch.name=$(Build.SourceBranchName)'
           - task: SonarQubeAnalyze@5
             inputs:
               jdkversion: 'JAVA_HOME_17_X64'
