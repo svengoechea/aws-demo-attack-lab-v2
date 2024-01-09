@@ -89,7 +89,8 @@ stages:
               configMode: 'manual'
               cliSources: '.'
               extraProperties: |
-                sonar.exclusions=$(appPath)
+                sonar.exclusions=**/*.java
+                sonar.coverage.exclusions=**/*.java
               cliProjectKey: $(projectName)
           - task: SonarQubeAnalyze@5
           - task: SonarQubePublish@5
