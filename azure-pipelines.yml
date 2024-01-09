@@ -37,7 +37,7 @@ stages:
     - stage: iac_scan
       condition: always()
       displayName: IaC Scan (Prisma)
-      dependsOn: iac_validation
+      # dependsOn: iac_validation
       jobs:
         # - job: security_gate
         #   displayName:  Checkov Scanning
