@@ -90,6 +90,7 @@ stages:
               cliSources: '.'
               extraProperties: |
                 sonar.exclusions=$(appPath)
+              cliProjectKey: $(projectName)
           - task: SonarQubeAnalyze@5
           - task: SonarQubePublish@5
             inputs:
