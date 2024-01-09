@@ -1,5 +1,5 @@
 trigger:
-  - main
+  - master
   # paths:
   #   include:
   #     - infra/*
@@ -61,7 +61,6 @@ stages:
               configMode: 'manual'
               cliProjectKey: 'davidaavilar_aws-demo-attack-lab-v2_AYzvSbf5WekUu8ehLgwk'
               cliSources: '.'
-        
           - task: SonarQubeAnalyze@5
           - task: SonarQubePublish@5
             inputs:
