@@ -63,8 +63,6 @@ stages:
               cliSources: '.'
               extraProperties: 
           - task: SonarQubeAnalyze@5
-            inputs:
-              jdkversion: 'JAVA_HOME_17_X64'
           - task: SonarQubePublish@5
             inputs:
               pollingTimeoutSec: '120'
