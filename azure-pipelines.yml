@@ -92,9 +92,9 @@ stages:
                 sonar.exclusions=$(appPath)
           - task: SonarQubeAnalyze@5
           - task: SonarQubePublish@5
-          inputs:
-            pollingTimeoutSec: '120'
-            
+            inputs:
+              pollingTimeoutSec: '120'
+
     # - stage: iac_deploy
     #   displayName: IaC Deploy
     #   dependsOn: 
