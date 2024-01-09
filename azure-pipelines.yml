@@ -54,23 +54,6 @@ stages:
         - job: sonar_scanning
           displayName:  Sonar Scanning
           steps:
-          - task: Maven@4
-            inputs:
-              mavenPomFile: '$(appPath)/pom.xml'
-              goals: 'install sonar:sonar'
-              publishJUnitResults: true
-              testResultsFiles: '**/surefire-reports/TEST-*.xml'
-              javaHomeOption: 'JDKVersion'
-              mavenVersionOption: 'Default'
-              mavenAuthenticateFeed: false
-              effectivePomSkip: false
-              sonarQubeRunAnalysis: true
-              sqMavenPluginVersionChoice: 'latest'
-          - task: JavaToolInstaller@0
-            inputs:
-              versionSpec: '11'
-              jdkArchitectureOption: 'x64'
-              jdkSourceOption: 'PreInstalled'
           - task: SonarQubePrepare@5
             inputs:
               SonarQube: 'davids-sonarqube'
@@ -81,6 +64,22 @@ stages:
                 # sonar.sources=app/src/main/java/
                 # sonar.language=java
                 # sonar.java.binaries=**/target/classes
+          - task: JavaToolInstaller@0
+            inputs:
+              versionSpec: '11'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
+          - task: Maven@4
+            inputs:
+              mavenPomFile: '$(appPath)/pom.xml'
+              goals: 'install sonar:sonar'
+              publishJUnitResults: true
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              javaHomeOption: 'JDKVersion'
+              mavenVersionOption: 'Default'
+              mavenAuthenticateFeed: false
+              effectivePomSkip: false
+              sonarQubeRunAnalysis: false
           - task: SonarQubePublish@5
             inputs:
               pollingTimeoutSec: '120'
