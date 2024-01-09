@@ -49,17 +49,22 @@ stages:
           - script: pip install checkov
             displayName: Instalacion Checkov
           - script: |
-              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet --framework terraform,json
+              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet
             displayName: Escaneo IaC
-          - script: |
-              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet --framework sca_package,sca_image,dockerfile
-            displayName: Escaneo SCA
-          - script: |
-              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet --framework secrets
-            displayName: Escaneo Secrets
-          - script: |
-              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet --framework kubernetes
-            displayName: Escaneo Kubernetes
+        - job: sonar_scanning
+          displayName:  Sonar Scanning
+          steps:
+          - task: SonarQubePrepare@5
+            inputs:
+              SonarQube: 'davids-sonarqube'
+              scannerMode: 'CLI'
+              configMode: 'file'
+          - task: SonarQubeAnalyze@5
+            inputs:
+              jdkversion: 'JAVA_HOME_17_X64'
+          - task: SonarQubePublish@5
+            inputs:
+              pollingTimeoutSec: '120'
     - stage: iac_deploy
       displayName: IaC Deploy
       dependsOn: 
