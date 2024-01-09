@@ -61,6 +61,10 @@ stages:
               configMode: 'manual'
               cliProjectKey: 'davidaavilar_aws-demo-attack-lab-v2_AYzvSbf5WekUu8ehLgwk'
               cliSources: '.'
+              extraProperties: |
+                sonar.sources=app/src/main/java/
+                sonar.language=java
+                sonar.java.binaries=**/target/classes
           - task: SonarQubeAnalyze@5
             inputs:
               jdkversion: 'JAVA_HOME_17_X64'
