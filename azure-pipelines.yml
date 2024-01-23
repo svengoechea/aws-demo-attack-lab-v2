@@ -53,7 +53,6 @@ stages:
           - script: |
               checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet
             displayName: Escaneo IaC
-          displayName: Escaneo IaC
         - job: sonar_scanning
           displayName:  SonarQube Scanning
           steps:
