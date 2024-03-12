@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: twistlock
+  name: prismacloud
 
 ---
 
@@ -45,7 +45,7 @@ subjects:
 - apiGroup:
   kind: ServiceAccount
   name: twistlock-service
-  namespace: twistlock
+  namespace: prismacloud
 ---
 
 ---
@@ -53,7 +53,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: twistlock-secrets
-  namespace: twistlock
+  namespace: prismacloud
 type: Opaque
 data:
   service-parameter: VU5LdXpCQk9hejBGQ0hnWW5oV25zYmlYQVNmVnZlK0FzTWNScTB0MDVhbWtjYmxOTGdLT0JuTzNXWnd6RHVBOW10cGpWNVErbVBJMGZJSHl0Nnh4TGc9PQ==
@@ -68,7 +68,7 @@ apiVersion: v1
 kind: ServiceAccount # Service Account is used for managing security context constraints policies in Openshift (SCC)
 metadata:
   name: twistlock-service
-  namespace: twistlock
+  namespace: prismacloud
 secrets:
 - name: twistlock-secrets
 ---
@@ -76,7 +76,7 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: twistlock-defender-ds
-  namespace: twistlock
+  namespace: prismacloud
 spec:
   selector:
     matchLabels:
@@ -188,7 +188,7 @@ apiVersion: v1
 kind: Service # Expose the Defender as admission controller. Remark: by default, Defender will not listen on the service port
 metadata:
   name: defender
-  namespace: twistlock
+  namespace: prismacloud
   labels:
     app: twistlock-defender
 spec:
