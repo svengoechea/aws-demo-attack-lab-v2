@@ -26,7 +26,7 @@ resource "aws_lambda_function" "analysis_lambda" {
 
   source_code_hash = filebase64sha256("${path.root}/resources/lambda_function_payload.zip")
 
-  runtime = "python3.7"
+  runtime = "python3.8"
 
   environment {
     variables = {
