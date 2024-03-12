@@ -189,7 +189,7 @@ stages:
       # condition:  eq(dependencies.docker_build.outputs['check_app_changes.check_app_changes.SOURCE_CODE_CHANGED'], 'true')
       jobs:
         - job: Scan
-          displayName: Docker Push
+          displayName: Image Scan (Prisma)
           steps:
           - task: DownloadPipelineArtifact@2
             inputs:
@@ -253,7 +253,9 @@ stages:
               tokenPrefix: __
               tokenSuffix: __
           - bash: kubectl apply -f $(System.DefaultWorkingDirectory)/$(k8sPath)/app.yaml
-            displayName: "Deploying Application"
+            displayName: "Deploying Spring Application"
+          - bash: kubectl apply -f $(System.DefaultWorkingDirectory)/$(k8sPath)/priv-pod.yaml
+            displayName: "Deploying Nginx Application"
           - bash: kubectl get svc -A | grep elb | awk '{print $5}'
             displayName: URL to Attack
     - stage: defender_deployment
@@ -273,7 +275,7 @@ stages:
           - bash: |
               if [[ $(kubectl get ns | grep prismacloud | awk '{print $1}') != 'prismacloud' ]]
               then
-                kubectl apply -f $(System.DefaultWorkingDirectory)/$(k8sPath)/daemonset.yaml
+                kubectl apply -f $(System.DefaultWorkingDirectory)/$(k8sPath)/daemonset.yaml && kubectl apply -f $(System.DefaultWorkingDirectory)/$(k8sPath)/webhook.yaml
               else
                 echo "Prisma Cloud Namespace already exists, not deploying again!"
               fi
