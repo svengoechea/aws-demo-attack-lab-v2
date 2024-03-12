@@ -1,4 +1,4 @@
-import requests, argparse, time, requests
+import requests, argparse, time
 from urllib.parse import urlparse
 
 with open('urltoattack.txt') as f:
