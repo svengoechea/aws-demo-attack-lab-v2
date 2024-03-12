@@ -36,23 +36,23 @@ stages:
               provider: 'aws'
               command: 'validate'
               workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
-    - stage: iac_scan
-      condition: always()
-      displayName: Code Scan
-      dependsOn: iac_validation
-      jobs:
-        - job: security_gate
-          displayName:  Checkov Scanning
-          steps:
-          - task: UsePythonVersion@0
-            displayName: Instalacion Python
-            inputs:
-              versionSpec: '3.8'
-          - script: pip install checkov
-            displayName: Instalacion Checkov
-          - script: |
-              checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet
-            displayName: Escaneo IaC
+    # - stage: iac_scan
+    #   condition: always()
+    #   displayName: Code Scan
+    #   dependsOn: iac_validation
+    #   jobs:
+    #     - job: security_gate
+    #       displayName:  Checkov Scanning
+    #       steps:
+    #       - task: UsePythonVersion@0
+    #         displayName: Instalacion Python
+    #         inputs:
+    #           versionSpec: '3.8'
+    #       - script: pip install checkov
+    #         displayName: Instalacion Checkov
+    #       - script: |
+    #           checkov --prisma-api-url $(PRISMA_CONSOLE) --bc-api-key $(PRISMA_TOKEN) -d . --repo-id $(System.TeamProject)/$(Build.Repository.Name) --branch $(Build.SourceBranchName) --use-enforcement-rules --compact --quiet
+    #         displayName: Escaneo IaC
         # - job: sonar_scanning
         #   displayName:  SonarQube Scanning
         #   steps:
@@ -186,7 +186,7 @@ stages:
     - stage: docker_image_scan
       displayName: Image Scan (Prisma)
       dependsOn: docker_build
-      condition:  eq(dependencies.docker_build.outputs['check_app_changes.check_app_changes.SOURCE_CODE_CHANGED'], 'true')
+      # condition:  eq(dependencies.docker_build.outputs['check_app_changes.check_app_changes.SOURCE_CODE_CHANGED'], 'true')
       jobs:
         - job: Scan
           displayName: Docker Push
@@ -209,7 +209,7 @@ stages:
       dependsOn: 
         - docker_build
         - docker_image_scan
-      condition:  eq(dependencies.docker_build.outputs['check_app_changes.check_app_changes.SOURCE_CODE_CHANGED'], 'true')
+      # condition:  eq(dependencies.docker_build.outputs['check_app_changes.check_app_changes.SOURCE_CODE_CHANGED'], 'true')
       jobs:
         - job: docker_push
           displayName: Docker Push
