@@ -118,7 +118,7 @@ stages:
             displayName: Terraform Apply
             inputs:
               provider: 'aws'
-              command: 'destroy'
+              command: 'apply'
               environmentServiceNameAWS: '$(backendServiceAWS)'
               workingDirectory: '$(System.DefaultWorkingDirectory)/$(infraPath)'
               commandOptions: '-refresh=false'
