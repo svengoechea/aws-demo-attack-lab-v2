@@ -168,7 +168,7 @@ stages:
           - task: Docker@2
             displayName: dockerBuild
             inputs:
-              containerRegistry: 29c5a2ee-3cf2-453f-bc6c-af40c852272e
+              containerRegistry: docker-svengoechea-sc
               repository: $(imageName)
               command: build
               Dockerfile: '$(appPath)/Dockerfile'
@@ -225,7 +225,7 @@ stages:
           - task: Docker@2
             displayName: dockerPush
             inputs:
-              containerRegistry: 29c5a2ee-3cf2-453f-bc6c-af40c852272e
+              containerRegistry: docker-svengoechea-sc
               repository: $(imageName)
               command: push
               tags: $(imageTag)
